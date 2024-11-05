@@ -19,18 +19,13 @@ parameters:
     type: string
     description: Flavor with 1 CPU and 4GB RAM
     default: gx3.1c4r
-    
-  network_name:
-    type: string
-    description: The network name to connect instances
-    default: infrastructure-delivery-pipeline-network
 
 resources:
   # Creating the Network
   my_network:
     type: OS::Neutron::Net
     properties:
-      name: { get_param: network_name }
+      name: infrastructure-delivery-pipeline-network
 
   # Subnet for the network
   my_subnet:
