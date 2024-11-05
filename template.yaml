@@ -1,0 +1,74 @@
+heat_template_version: 2016-10-14
+
+description: >
+  A template to deploy one Windows Server and one Ubuntu Server instance, each
+  with 1 vCPU and 4GB RAM.
+
+parameters:
+  image_windows:
+    type: string
+    description: Name or ID of the Windows image to use
+    default: Windows 10 22H2 Enterprise [Evaluation]
+    
+  image_ubuntu:
+    type: string
+    description: Name or ID of the Ubuntu image to use
+    default: Ubuntu Server 24.04 LTS (Noble Numbat) amd64
+    
+  flavor:
+    type: string
+    description: Flavor with 1 CPU and 4GB RAM
+    default: gx3.1c4r
+    
+  network_name:
+    type: string
+    description: The network name to connect instances
+    default: MySecondNetwork
+
+resources:
+  # Creating the Network
+  my_network:
+    type: OS::Neutron::Net
+    properties:
+      name: { get_param: network_name }
+
+  # Subnet for the network
+  my_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network: { get_resource: my_network }
+      cidr: 192.168.1.0/24
+      ip_version: 4
+
+  # Creating a Windows Server Instance
+  windows_instance:
+    type: OS::Nova::Server
+    properties:
+      name: WindowsServer
+      image: { get_param: image_windows }
+      flavor: { get_param: flavor }
+      networks:
+        - network: { get_param: network_name }
+      key_name: MySecondKey
+    depends_on: my_network
+
+  # Creating an Ubuntu Instance
+  ubuntu_instance:
+    type: OS::Nova::Server
+    properties:
+      name: UbuntuServer
+      image: { get_param: image_ubuntu }
+      flavor: { get_param: flavor }
+      networks:
+        - network: { get_param: network_name }
+      key_name: MySecondKey
+    depends_on: my_network
+
+outputs:
+  windows_instance_ip:
+    description: IP address of the Windows Server
+    value: { get_attr: [ windows_instance, first_address ] }
+    
+  ubuntu_instance_ip:
+    description: IP address of the Ubuntu Server
+    value: { get_attr: [ ubuntu_instance, first_address ] }
