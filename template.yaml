@@ -23,7 +23,7 @@ parameters:
   network_name:
     type: string
     description: The network name to connect instances
-    default: MySecondNetwork
+    default: infrastructure-delivery-pipeline-network
 
 resources:
   # Creating the Network
@@ -49,7 +49,7 @@ resources:
       flavor: { get_param: flavor }
       networks:
         - network: { get_param: network_name }
-      key_name: MySecondKey
+      key_name: infrastructure-delivery-pipeline-key-pair
     depends_on: my_network
 
   # Creating an Ubuntu Instance
@@ -61,7 +61,7 @@ resources:
       flavor: { get_param: flavor }
       networks:
         - network: { get_param: network_name }
-      key_name: MySecondKey
+      key_name: infrastructure-delivery-pipeline-key-pair
     depends_on: my_network
 
 outputs:
