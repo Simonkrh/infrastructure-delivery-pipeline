@@ -1,14 +1,20 @@
 const express = require('express');
-const mysql = require('mysql');
+const mysql = require('mysql2');
+const cors = require('cors'); 
 
 const app = express();
 const port = 3000;
 
+// Use CORS to allow requests from frontend
+app.use(cors({
+    origin: 'http://10.212.26.123' 
+}));
+
 // Create MySQL connection
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root', // or create a separate MySQL user
-    password: 'your_mysql_password',
+    user: 'backend_user',
+    password: 'N0m!sSecurePwd123',
     database: 'food_db'
 });
 

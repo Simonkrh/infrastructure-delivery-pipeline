@@ -91,14 +91,17 @@ jobs:
         env:
           BACKEND_IP_ADDRESS: ${{ secrets.BACKEND_IP_ADDRESS }}
         run: |
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} "rm -rf /home/ubuntu/backend"
           scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./backend ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
           ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
             sudo apt update
             sudo apt install -y nodejs npm
             cd /home/ubuntu/backend
             npm install
-            nohup node app.js &
+            nohup node app.js > /dev/null 2>&1 & disown  # Start app.js detached
           EOF
+
 
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
+        
