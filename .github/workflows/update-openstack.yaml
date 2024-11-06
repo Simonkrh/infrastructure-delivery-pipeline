@@ -22,16 +22,16 @@ jobs:
           sudo apt install -y python3-openstackclient
           sudo apt install -y python3-pip
           pip install --upgrade pip
-          pip install --upgrade python-openstackclient python-heatclient
+          if [ ! -d ".cache" ]; then mkdir .cache; fi
+          export PIP_CACHE_DIR=.cache
+          pip install --cache-dir .cache --upgrade python-openstackclient python-heatclient
 
-      - name: Debug Python Version and Installed Packages
-        run: |
-          python3 --version
-          pip3 list
+      - name: List files in current directory
+        run: ls -al .github
 
       - name: Debug Environment Variables
         run: printenv
-
+    
       - name: Configure OpenStack Environment
         env:
           OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
@@ -71,8 +71,18 @@ jobs:
         run: |
           openstack stack update --existing --template template.yaml infrastructure-delivery-pipeline-stack
 
-      - name: Deploy Frontend to Windows Instance
+      - name: Decode PEM Key and Save
         env:
-          WINDOWS_IP_ADDRESS: ${{ secrets.WINDOWS_IP_ADDRESS }}
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY_BASE64 }}
         run: |
-          scp -i C:\Users\simon\OneDrive\Skolearbeid\NTNU\5. Semester\Administrasjon av Skytjeneseter\Portfolio\infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html windows@${{ env.WINDOWS_IP_ADDRESS }}:C:/xampp/htdocs/index.html
+          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
+          chmod 600 infrastructure-delivery-pipeline-key-pair.pem
+
+      - name: Deploy Frontend to Linux Instance
+        env:
+          FRONTEND_IP_ADDRESS: ${{ secrets.FRONTEND_IP_ADDRESS }}
+        run: |
+           scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/var/www/html/index.html
+
+      - name: Clean Up PEM Key
+        run: rm infrastructure-delivery-pipeline-key-pair.pem
