@@ -6,6 +6,7 @@ on:
       - template.yaml  # Only trigger when this file is changed
     branches:
       - main  # Run on changes to the main branch (adjust if needed)
+    workflow_dispatch:
 
 jobs:
   update_stack:
