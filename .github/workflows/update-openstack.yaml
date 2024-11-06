@@ -21,6 +21,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-openstackclient
 
+      - name: Debug Environment Variables
+        run: printenv
+
+      - name: Verify OpenStack CLI Installation
+        run: openstack --version
+
+      - name: List OpenStack Commands
+        run: openstack help
+
       - name: Configure OpenStack Environment
         env:
           OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
