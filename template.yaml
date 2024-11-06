@@ -44,7 +44,7 @@ parameters:
   windows_instance:
     type: OS::Nova::Server
     properties:
-      name: WindowsServer-Test1
+      name: WindowsServer-Test
       image: { get_param: image_windows }
       flavor: { get_param: flavor }
       networks:
