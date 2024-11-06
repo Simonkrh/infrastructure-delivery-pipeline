@@ -30,6 +30,12 @@ jobs:
       - name: List OpenStack Commands
         run: openstack --help
 
+      - name: Check OpenStack Authentication Endpoint
+        run: curl -I $OS_AUTH_URL
+        env:
+        OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+
+
       - name: Configure OpenStack Environment
         env:
           OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
@@ -67,4 +73,4 @@ jobs:
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
         run: |
-            openstack stack update --template template.yaml infrastructure-delivery-pipeline-stack || heat stack-update -f template.yaml infrastructure-delivery-pipeline-stack
+            openstack stack update --template template.yaml infrastructure-delivery-pipeline-stack
