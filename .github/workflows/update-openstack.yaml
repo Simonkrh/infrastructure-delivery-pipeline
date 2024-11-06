@@ -6,7 +6,7 @@ on:
       - template.yaml  # Only trigger when this file is changed
     branches:
       - main  # Run on changes to the main branch (adjust if needed)
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   update_stack:
@@ -30,12 +30,6 @@ jobs:
       - name: List OpenStack Commands
         run: openstack --help
 
-      - name: Check OpenStack Authentication Endpoint
-        run: curl -I $OS_AUTH_URL
-        env:
-        OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
-
-
       - name: Configure OpenStack Environment
         env:
           OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
@@ -49,16 +43,8 @@ jobs:
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
         run: |
-          export OS_AUTH_URL=$OS_AUTH_URL
-          export OS_PROJECT_NAME=$OS_PROJECT_NAME
-          export OS_USERNAME=$OS_USERNAME
-          export OS_PASSWORD=$OS_PASSWORD
-          export OS_REGION_NAME=$OS_REGION_NAME
-          export OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME
-          export OS_PROJECT_DOMAIN_ID=$OS_PROJECT_DOMAIN_ID
-          export OS_PROJECT_ID=$OS_PROJECT_ID
-          export OS_IDENTITY_API_VERSION=$OS_IDENTITY_API_VERSION
-          export OS_INTERFACE=$OS_INTERFACE
+          # Ensure environment variables are available
+          echo "Environment configured for OpenStack"
 
       - name: Update OpenStack Stack
         env:
@@ -73,4 +59,4 @@ jobs:
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
         run: |
-            openstack stack update --template template.yaml infrastructure-delivery-pipeline-stack
+          openstack stack update --template template.yaml infrastructure-delivery-pipeline-stack
