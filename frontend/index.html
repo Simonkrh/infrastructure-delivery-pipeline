@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Checklist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .food-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .food-item label {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Food Checklist</h1>
+    <div id="food-list">
+        <!-- List of food items with checkboxes will go here -->
+    </div>
+    <button onclick="saveStatus()">Save Status</button>
+
+    <script>
+        // List of food items
+        const foodItems = [
+            { id: 1, name: 'Apple', checked: false },
+            { id: 2, name: 'Banana', checked: false },
+            { id: 3, name: 'Carrot', checked: false }
+        ];
+
+        // Function to render food items with checkboxes
+        function renderFoodItems() {
+            const foodList = document.getElementById('food-list');
+            foodList.innerHTML = '';
+            foodItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'food-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = item.checked;
+                checkbox.onchange = () => item.checked = checkbox.checked;
+
+                const label = document.createElement('label');
+                label.textContent = item.name;
+
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                foodList.appendChild(itemDiv);
+            });
+        }
+
+        // Function to save the check status (placeholder)
+        function saveStatus() {
+            console.log('Saving status:', foodItems);
+            // In the future, send data to the backend here
+        }
+
+        // Initial rendering of food items
+        renderFoodItems();
+    </script>
+</body>
+</html>

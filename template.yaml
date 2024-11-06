@@ -1,8 +1,8 @@
-heat_template_version: 2016-10-14
+heat_template_version: 2018-03-02
 
 description: >
   A template to deploy one Windows Server and one Ubuntu Server instance, each
-  with 1 vCPU and 4GB RAM.
+  with 1 vCPU and 3GB RAM.
 
 parameters:
   image_windows:
@@ -18,14 +18,14 @@ parameters:
   flavor:
     type: string
     description: Flavor with 1 CPU and 4GB RAM
-    default: gx3.1c4r
+    default: gx3.1c3r
 
   security_group:
     type: string
     description: Name of the security group to attach to the instances
     default: infrastructure-delivery-pipeline-security-group
 
-  resources:
+resources:
   # Creating the Network
   my_network:
     type: OS::Neutron::Net
@@ -44,12 +44,12 @@ parameters:
   windows_instance:
     type: OS::Nova::Server
     properties:
-      name: WindowsServer-Test1
+      name: WindowsServer
       image: { get_param: image_windows }
       flavor: { get_param: flavor }
       networks:
         - network: { get_resource: my_network }
-      key_name: infrastructure-delivery-pipeline-key-pair'
+      key_name: infrastructure-delivery-pipeline-key-pair
       security_groups: [{ get_param: security_group }]
     depends_on: my_network
 
