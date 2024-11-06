@@ -16,10 +16,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install OpenStack CLI
+      - name: Install OpenStack CLI and Heat Client
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-openstackclient
+          sudo apt-get install -y python3-openstackclient python3-heatclient
 
       - name: Debug Environment Variables
         run: printenv
@@ -67,4 +67,4 @@ jobs:
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
         run: |
-          openstack stack update --template template.yaml infrastructure-delivery-pipeline-stack
+            openstack stack update --template template.yaml infrastructure-delivery-pipeline-stack || heat stack-update -f template.yaml infrastructure-delivery-pipeline-stack
