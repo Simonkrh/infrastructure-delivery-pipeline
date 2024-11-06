@@ -1,0 +1,60 @@
+name: Update OpenStack Stack
+
+on:
+  push:
+    paths:
+      - template.yaml  # Only trigger when this file is changed
+    branches:
+      - main  # Run on changes to the main branch (adjust if needed)
+
+jobs:
+  update_stack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install OpenStack CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-openstackclient
+
+      - name: Configure OpenStack Environment
+        env:
+          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+          OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
+          OS_USERNAME: ${{ secrets.OS_USERNAME }}
+          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
+          OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
+          OS_PROJECT_DOMAIN_ID: ${{ secrets.OS_PROJECT_DOMAIN_ID }}
+          OS_PROJECT_ID: ${{ secrets.OS_PROJECT_ID }}
+          OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
+          OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
+        run: |
+          export OS_AUTH_URL=$OS_AUTH_URL
+          export OS_PROJECT_NAME=$OS_PROJECT_NAME
+          export OS_USERNAME=$OS_USERNAME
+          export OS_PASSWORD=$OS_PASSWORD
+          export OS_REGION_NAME=$OS_REGION_NAME
+          export OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME
+          export OS_PROJECT_DOMAIN_ID=$OS_PROJECT_DOMAIN_ID
+          export OS_PROJECT_ID=$OS_PROJECT_ID
+          export OS_IDENTITY_API_VERSION=$OS_IDENTITY_API_VERSION
+          export OS_INTERFACE=$OS_INTERFACE
+
+      - name: Update OpenStack Stack
+        env:
+          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+          OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
+          OS_USERNAME: ${{ secrets.OS_USERNAME }}
+          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
+          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
+          OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
+          OS_PROJECT_DOMAIN_ID: ${{ secrets.OS_PROJECT_DOMAIN_ID }}
+          OS_PROJECT_ID: ${{ secrets.OS_PROJECT_ID }}
+          OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
+          OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
+        run: |
+          openstack stack update --template template.yaml infrastructure-delivery-pipeline
