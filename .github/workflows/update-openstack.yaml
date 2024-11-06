@@ -58,5 +58,4 @@ jobs:
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
         run: |
-          openstack stack update --template template.yaml --existing infrastructure-delivery-pipeline
-
+          openstack orchestration stack update --template template.yaml --existing infrastructure-delivery-pipeline
