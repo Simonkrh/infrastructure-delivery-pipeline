@@ -78,11 +78,27 @@ jobs:
           echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
           chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
+      # Deploy Frontend
       - name: Deploy Frontend to Linux Instance
         env:
           FRONTEND_IP_ADDRESS: ${{ secrets.FRONTEND_IP_ADDRESS }}
         run: |
-           scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/var/www/html/index.html
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/index.html
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "sudo mv /home/ubuntu/index.html /var/www/html/index.html"
+
+      # Deploy Backend
+      - name: Deploy Backend to Backend Instance
+        env:
+          BACKEND_IP_ADDRESS: ${{ secrets.BACKEND_IP_ADDRESS }}
+        run: |
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./backend ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
+            sudo apt update
+            sudo apt install -y nodejs npm
+            cd /home/ubuntu/backend
+            npm install
+            nohup node app.js &
+          EOF
 
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
