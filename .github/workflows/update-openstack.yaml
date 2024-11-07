@@ -79,12 +79,27 @@ jobs:
           chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
       # Deploy Frontend
-      - name: Deploy Frontend to Linux Instance
+      - name: Deploy Frontend Files to Linux Instance
         env:
           FRONTEND_IP_ADDRESS: ${{ secrets.FRONTEND_IP_ADDRESS }}
         run: |
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/index.html
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "sudo mv /home/ubuntu/index.html /var/www/html/index.html"
+          # Create the frontend directory if it doesn't exist
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "mkdir -p /home/ubuntu/frontend"
+
+          # Copy frontend files
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/index.html
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/package.json ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/package.json
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/frontend-server.js ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend-server.js
+
+          # Install dependencies and start the frontend server
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
+            sudo apt update
+            sudo apt install -y nodejs npm
+            cd /home/ubuntu/frontend
+            npm install
+            cd /home/ubuntu
+            nohup node frontend-server.js > /home/ubuntu/frontend-server.log 2>&1 & disown  # Start frontend server in the background
+          EOF
 
       # Deploy Backend
       - name: Deploy Backend to Backend Instance

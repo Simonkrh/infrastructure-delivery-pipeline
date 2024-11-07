@@ -7,16 +7,16 @@
 </head>
 <body>
     <h1>Food Checklist</h1>
-    <div id="food-list">
-        <!-- Rendered food items will appear here -->
-    </div>
+    <div id="food-list"></div>
     <script>
-        const ws = new WebSocket('ws://10.212.26.149:8080'); 
+        const backendAPI = '/api';
+        
+        const ws = new WebSocket(`ws://${window.location.host}/api`);
 
         // Fetch food items from the backend API
         async function fetchFoodItems() {
             try {
-                const response = await fetch('http://10.212.26.149:8080/food-items');
+                const response = await fetch(`${backendAPI}/food-items`);
                 const data = await response.json();
                 return data;
             } catch (error) {
@@ -54,7 +54,7 @@
         // Send update to backend when checkbox changes
         async function updateCheckedStatus(id, checked) {
             try {
-                await fetch('http://10.212.26.149:8080/update-item', {
+                await fetch(`${backendAPI}/update-item`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, checked })

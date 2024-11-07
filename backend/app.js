@@ -7,9 +7,9 @@ const WebSocket = require('ws');
 const app = express();
 const port = 8080;
 
-// Use CORS to allow requests from the frontend
+// CORS to allow access from both internal and external IPs
 app.use(cors({
-    origin: 'http://10.212.26.123'
+    origin: ['http://10.212.26.123', 'http://192.168.1.109'] 
 }));
 
 // Create a MySQL connection pool
