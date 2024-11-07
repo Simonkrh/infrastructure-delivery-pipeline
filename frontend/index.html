@@ -1,39 +1,62 @@
-<script>
-    // Fetch food items from the backend API
-    async function fetchFoodItems() {
-        try {
-            const response = await fetch('http://10.212.26.149:3000/food-items');
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching food items:', error);
-            return [];
-        }
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Checklist</title>
+</head>
+<body>
+    <h1>Food Checklist</h1>
+    <div id="food-list">
+        <!-- Rendered food items will appear here -->
+    </div>
+    <script>
+        // JavaScript to fetch and render food items
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Fetch food items from the backend API
+            async function fetchFoodItems() {
+                try {
+                    const response = await fetch('http://10.212.26.149:3000/food-items');
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Error fetching food items:', error);
+                    return [];
+                }
+            }
 
-    // Function to render food items with checkboxes
-    async function renderFoodItems() {
-        const foodItems = await fetchFoodItems();
-        const foodList = document.getElementById('food-list');
-        foodList.innerHTML = '';
-        foodItems.forEach(item => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'food-item';
+            // Function to render food items with checkboxes
+            async function renderFoodItems() {
+                const foodItems = await fetchFoodItems();
+                const foodList = document.getElementById('food-list');
+                
+                // Check if foodList exists to avoid potential errors
+                if (foodList) {
+                    foodList.innerHTML = '';
+                    foodItems.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'food-item';
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = item.checked;
-            checkbox.onchange = () => item.checked = checkbox.checked;
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = item.checked;
+                        checkbox.onchange = () => item.checked = checkbox.checked;
 
-            const label = document.createElement('label');
-            label.textContent = item.name;
+                        const label = document.createElement('label');
+                        label.textContent = item.name;
 
-            itemDiv.appendChild(checkbox);
-            itemDiv.appendChild(label);
-            foodList.appendChild(itemDiv);
+                        itemDiv.appendChild(checkbox);
+                        itemDiv.appendChild(label);
+                        foodList.appendChild(itemDiv);
+                    });
+                } else {
+                    console.error("Element with id 'food-list' not found.");
+                }
+            }
+
+            // Initial rendering of food items
+            renderFoodItems();
         });
-    }
-
-    // Initial rendering of food items
-    renderFoodItems();
-</script>
+    </script>
+</body>
+</html>
