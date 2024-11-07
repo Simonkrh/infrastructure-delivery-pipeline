@@ -1,13 +1,15 @@
 const express = require('express');
 const mysql = require('mysql2');
-const cors = require('cors'); 
+const cors = require('cors');
+const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
-const port = 3000;
+const port = 8080;
 
-// Use CORS to allow requests from frontend
+// Use CORS to allow requests from the frontend
 app.use(cors({
-    origin: 'http://10.212.26.123' 
+    origin: 'http://10.212.26.123'
 }));
 
 // Create a MySQL connection pool
@@ -23,33 +25,43 @@ const pool = mysql.createPool({
 
 // Endpoint to get food items
 app.get('/food-items', (req, res) => {
-    console.log("Received request for /food-items");
-
     const query = 'SELECT * FROM food_items';
     pool.query(query, (err, results) => {
         if (err) {
-            console.error('Database query error:', err);
             res.status(500).json({ error: 'Database error', details: err.message });
             return;
         }
-        console.log("Successfully fetched food items:", results);
         res.json(results);
     });
 });
 
-// Add a health check endpoint to test the database connection status
-app.get('/health', (req, res) => {
-    pool.query('SELECT 1', (err, results) => {
+// Endpoint to update the checked status of a food item
+app.use(express.json()); // For parsing JSON body in requests
+app.post('/update-item', (req, res) => {
+    const { id, checked } = req.body;
+    const query = 'UPDATE food_items SET checked = ? WHERE id = ?';
+    pool.query(query, [checked, id], (err) => {
         if (err) {
-            console.error('Health check failed:', err);
-            res.status(500).json({ error: 'Database connection error', details: err.message });
-        } else {
-            console.log('Health check successful');
-            res.status(200).json({ status: 'OK' });
+            res.status(500).json({ error: 'Database error', details: err.message });
+            return;
         }
+
+        // Broadcast the update to all WebSocket clients
+        const update = JSON.stringify({ id, checked });
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(update);
+            }
+        });
+
+        res.status(200).json({ success: true });
     });
 });
 
-app.listen(port, '0.0.0.0', () => {
+// Setup WebSocket server
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+server.listen(port, () => {
     console.log(`Server running on http://0.0.0.0:${port}`);
 });
