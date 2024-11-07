@@ -4,16 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Checklist</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #food-list {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .food-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        label {
+            color: #555;
+        }
+    </style>
 </head>
 <body>
     <h1>Food Checklist</h1>
     <div id="food-list"></div>
     <script>
         const backendAPI = '/api';
-        
         const ws = new WebSocket(`ws://${window.location.host}/api`);
 
-        // Fetch food items from the backend API
         async function fetchFoodItems() {
             try {
                 const response = await fetch(`${backendAPI}/food-items`);
@@ -25,7 +63,6 @@
             }
         }
 
-        // Function to render food items with checkboxes
         async function renderFoodItems() {
             const foodItems = await fetchFoodItems();
             const foodList = document.getElementById('food-list');
@@ -39,6 +76,7 @@
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.checked = item.checked;
+                    checkbox.setAttribute('data-id', item.id); 
                     checkbox.onchange = () => updateCheckedStatus(item.id, checkbox.checked);
 
                     const label = document.createElement('label');
@@ -51,7 +89,6 @@
             }
         }
 
-        // Send update to backend when checkbox changes
         async function updateCheckedStatus(id, checked) {
             try {
                 await fetch(`${backendAPI}/update-item`, {
@@ -69,7 +106,9 @@
             const data = JSON.parse(event.data);
             const checkbox = document.querySelector(`input[type="checkbox"][data-id="${data.id}"]`);
             if (checkbox) {
-                checkbox.checked = data.checked;
+                checkbox.checked = data.checked; 
+            } else {
+                renderFoodItems();
             }
         };
 
