@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,6 +68,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Food Checklist</h1>
     <input type="text" id="new-food-item" placeholder="Add new food item" />
@@ -90,7 +92,7 @@
         async function renderFoodItems() {
             const foodItems = await fetchFoodItems();
             const foodList = document.getElementById('food-list');
-            
+
             if (foodList) {
                 foodList.innerHTML = '';
                 foodItems.forEach(item => {
@@ -100,14 +102,22 @@
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.checked = item.checked;
-                    checkbox.setAttribute('data-id', item.id); 
+                    checkbox.setAttribute('data-id', item.id);
                     checkbox.onchange = () => updateCheckedStatus(item.id, checkbox.checked);
 
                     const label = document.createElement('label');
                     label.textContent = item.name;
 
+                    // Create delete button
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = '❌'; 
+                    deleteButton.style.marginLeft = 'auto';
+                    deleteButton.onclick = () => deleteFoodItem(item.id);
+
                     itemDiv.appendChild(checkbox);
                     itemDiv.appendChild(label);
+                    itemDiv.appendChild(deleteButton); 
+
                     foodList.appendChild(itemDiv);
                 });
             }
@@ -132,27 +142,40 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, checked: false })
                 });
-                renderFoodItems(); 
+                renderFoodItems();
             } catch (error) {
                 console.error('Error adding food item:', error);
             }
         }
-        
-        // Listen for real-time updates from WebSocket
-        ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        
-        if (data.deleted) {
-            renderFoodItems();
-        } else {
-            const checkbox = document.querySelector(`input[type="checkbox"][data-id="${data.id}"]`);
-            if (checkbox) {
-                checkbox.checked = data.checked; 
-            } else {
-                renderFoodItems();
+
+        async function deleteFoodItem(id) {
+            try {
+                await fetch(`${backendAPI}/delete-item`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                renderFoodItems(); // Refresh the food list after deletion
+            } catch (error) {
+                console.error('Error deleting food item:', error);
             }
         }
-    };
+
+        // Listen for real-time updates from WebSocket
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.deleted) {
+                renderFoodItems();
+            } else {
+                const checkbox = document.querySelector(`input[type="checkbox"][data-id="${data.id}"]`);
+                if (checkbox) {
+                    checkbox.checked = data.checked;
+                } else {
+                    renderFoodItems();
+                }
+            }
+        };
 
         // Initial rendering of food items
         renderFoodItems();
@@ -163,9 +186,10 @@
             const newItemName = newItemInput.value.trim();
             if (newItemName) {
                 addFoodItem(newItemName);
-                newItemInput.value = ''; 
+                newItemInput.value = '';
             }
         });
     </script>
 </body>
+
 </html>
