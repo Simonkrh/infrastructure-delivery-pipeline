@@ -28,6 +28,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             max-width: 300px;
             width: 100%;
+            margin-bottom: 20px;
         }
 
         .food-item {
@@ -43,10 +44,33 @@
         label {
             color: #555;
         }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
     <h1>Food Checklist</h1>
+    <input type="text" id="new-food-item" placeholder="Add new food item" />
+    <button id="add-food-item">Add Food Item</button>
     <div id="food-list"></div>
     <script>
         const backendAPI = '/api';
@@ -101,19 +125,47 @@
             }
         }
 
+        async function addFoodItem(name) {
+            try {
+                await fetch(`${backendAPI}/add-item`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, checked: false })
+                });
+                renderFoodItems(); 
+            } catch (error) {
+                console.error('Error adding food item:', error);
+            }
+        }
+        
         // Listen for real-time updates from WebSocket
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        const data = JSON.parse(event.data);
+        
+        if (data.deleted) {
+            renderFoodItems();
+        } else {
             const checkbox = document.querySelector(`input[type="checkbox"][data-id="${data.id}"]`);
             if (checkbox) {
                 checkbox.checked = data.checked; 
             } else {
                 renderFoodItems();
             }
-        };
+        }
+    };
 
         // Initial rendering of food items
         renderFoodItems();
+
+        // Event listener for adding new food item
+        document.getElementById('add-food-item').addEventListener('click', () => {
+            const newItemInput = document.getElementById('new-food-item');
+            const newItemName = newItemInput.value.trim();
+            if (newItemName) {
+                addFoodItem(newItemName);
+                newItemInput.value = ''; 
+            }
+        });
     </script>
 </body>
 </html>

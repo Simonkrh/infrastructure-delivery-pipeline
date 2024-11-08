@@ -7,6 +7,9 @@ const WebSocket = require('ws');
 const app = express();
 const port = 8080;
 
+// Enable JSON parsing for request bodies 
+app.use(express.json());
+
 // CORS to allow access from both internal and external IPs
 app.use(cors({
     origin: ['http://10.212.26.123', 'http://192.168.1.109'] 
@@ -35,8 +38,63 @@ app.get('/food-items', (req, res) => {
     });
 });
 
+// Endpoint to add a new food item
+app.post('/add-item', (req, res) => {
+    const { name } = req.body; 
+    const query = 'INSERT INTO food_items (name, checked) VALUES (?, false)';
+    
+    pool.query(query, [name], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: 'Database error', details: err.message });
+            return;
+        }
+
+        // Retrieve the new item ID
+        const newItemId = results.insertId;
+
+        // Construct the new item object to broadcast
+        const newItem = {
+            id: newItemId,
+            name: name,
+            checked: false
+        };
+
+        // Broadcast the new item to all WebSocket clients
+        const update = JSON.stringify(newItem);
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(update);
+            }
+        });
+
+        res.status(200).json({ success: true, id: newItemId });
+    });
+});
+
+// Endpoint to delete a food item
+app.delete('/delete-item', (req, res) => {
+    const { id } = req.body;
+    const query = 'DELETE FROM food_items WHERE id = ?';
+
+    pool.query(query, [id], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: 'Database error', details: err.message });
+            return;
+        }
+
+        // Broadcast the deletion to all WebSocket clients
+        const update = JSON.stringify({ id, deleted: true });
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(update);
+            }
+        });
+
+        res.status(200).json({ success: true });
+    });
+});
+
 // Endpoint to update the checked status of a food item
-app.use(express.json()); // For parsing JSON body in requests
 app.post('/update-item', (req, res) => {
     const { id, checked } = req.body;
     const query = 'UPDATE food_items SET checked = ? WHERE id = ?';
