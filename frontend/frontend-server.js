@@ -6,7 +6,7 @@ const app = express();
 const port = 8080; 
 
 // Serve static files from the directory containing frontend files
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname)));
 
 // Proxy API requests from '/api' to the backend server's private IP
 app.use('/api', createProxyMiddleware({
