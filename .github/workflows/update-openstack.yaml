@@ -16,14 +16,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Install yamllint for YAML syntax validation
       - name: Install yamllint with pip
         run: |
           sudo apt update
           sudo apt install -y python3-pip
           pip3 install yamllint
-
+        
+      # Lint the template.yaml file
       - name: Run YAML Linting
         run: yamllint template.yaml
+
+      # Install jq for JSON validation
+      - name: Install jq
+        run: sudo apt install -y jq
+
+      # Validate JSON package files
+      - name: Validate JSON Files
+        run: |
+          jq empty backend/package.json
+          jq empty frontend/package.json
+      
+      # Verify Backend Dependencies
+      - name: Verify Backend Dependencies
+        working-directory: backend
+        run: npm install
+
+      # Verify Frontend Dependencies
+      - name: Verify Frontend Dependencies
+        working-directory: frontend
+        run: npm install
+
+      # Install Node.js, ESLint, and Airbnb style guide for JS linting
+      - name: Set up Node.js and install ESLint
+        run: |
+          sudo apt install -y npm
+          npm install -g eslint eslint-config-airbnb-base eslint-plugin-import --save-dev
+          eslint ./frontend/*.js ./backend/*.js
+
 
       - name: Install and Upgrade OpenStack CLI and Heat Client
         run: |

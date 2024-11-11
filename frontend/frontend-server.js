@@ -1,3 +1,4 @@
+/*global require, __dirname*/
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
@@ -10,7 +11,7 @@ app.use(express.static(path.join(__dirname)));
 
 // Proxy API requests from '/api' to the backend server's private IP
 app.use('/api', createProxyMiddleware({
-    target: 'http://192.168.1.155:8080', // Private IP of backend server
+ target: 'http://192.168.1.155:8080', // Private IP of backend server
     changeOrigin: true,
     pathRewrite: {
         '^/api': '', // Remove '/api' prefix before forwarding to backend

@@ -1,3 +1,4 @@
+/*global require*/
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
@@ -76,7 +77,7 @@ app.delete('/delete-item', (req, res) => {
     const { id } = req.body;
     const query = 'DELETE FROM food_items WHERE id = ?';
 
-    pool.query(query, [id], (err, results) => {
+    pool.query(query, [id], (err) => {
         if (err) {
             res.status(500).json({ error: 'Database error', details: err.message });
             return;
