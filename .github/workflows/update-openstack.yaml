@@ -53,6 +53,14 @@ jobs:
           sudo apt install -y npm
           npm install -g eslint eslint-config-airbnb-base eslint-plugin-import --save-dev
           eslint ./frontend/*.js ./backend/*.js
+      
+      # Run npm audit to scan dependencies for known vulnerabilities
+      - name: Run npm audit for security vulnerabilities
+        run: |
+          cd backend
+          npm audit --audit-level=high  
+          cd ../frontend
+          npm audit --audit-level=high
 
 
       - name: Install and Upgrade OpenStack CLI and Heat Client
