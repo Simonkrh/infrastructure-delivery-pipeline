@@ -1,9 +1,9 @@
 # Infrastructure Delivery Pipeline
 
-## Project for IDATA2502 Portfolio
+## Project for the course [IDATA2502 Cloud services administration](https://www.ntnu.edu/studies/courses/IDATA2502) at NTNU
 
 ### Overview
-This project implements an infrastructure delivery pipeline using OpenStack and includes both a frontend and backend application for a food checklist. The pipeline automates the deployment of application components and manages communication between the frontend and backend servers.
+This project implements an infrastructure delivery pipeline using OpenStack and includes both a frontend and backend application for a simple shopping list. The pipeline automates the deployment of application components and manages communication between the frontend and backend servers.
 
 The primary **template.yaml** file in this repository is responsible for deploying:
 - **One Ubuntu Server instance** for the frontend (Ubuntu Server 24.04 LTS)
@@ -15,11 +15,11 @@ The **update-openstack.yaml** file is used to update the infrastructure stack an
 ## Features
 
 - **Frontend**: 
-  - A simple web interface for managing the checklist of food items.
-  - Communicates with the backend through a proxy server, streamlining the fetching and updating of food items.
+  - A simple web interface for managing the shopping list.
+  - Communicates with the backend through a proxy server, streamlining the fetching and updating of the shopping list items.
 
 - **Backend**:
-  - An API built with Express.js and MySQL that efficiently manages food item data.
+  - An API built with Express.js and MySQL that manages shopping list item data.
   - Real-time broadcasting of updates to connected clients via WebSockets, ensuring all users have the latest information.
 
 - **Infrastructure**:
