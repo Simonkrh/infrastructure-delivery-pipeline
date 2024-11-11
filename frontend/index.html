@@ -49,21 +49,32 @@
         input[type="text"] {
             padding: 10px;
             margin-bottom: 10px;
-            width: 100%;
+            width: 30%; 
             border: 1px solid #ccc;
             border-radius: 5px;
+            display: block;
+            margin: 0 auto; 
         }
 
         button {
             padding: 10px;
             color: #fff;
-            background-color: #28a745;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
         button:hover {
+            background-color: #d4d2d2
+        }
+        
+        .addButton {
+            background-color: #28a745;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        .addButton:hover {
             background-color: #218838;
         }
     </style>
@@ -72,7 +83,7 @@
 <body>
     <h1>Shopping List</h1>
     <input type="text" id="new-shopping-item" placeholder="Add new shopping item" />
-    <button id="add-shopping-item">Add Shopping Item</button>
+    <button id="add-shopping-item" class="addButton">Add Shopping Item</button>
     <div id="shopping-list"></div>
     <script>
         const backendAPI = '/api';
