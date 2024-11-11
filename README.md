@@ -1,6 +1,6 @@
 # Infrastructure Delivery Pipeline
 
-## Project for IDATA2502 Portfolio
+## Project for the course [IDATA2502 Cloud services administration](https://www.ntnu.edu/studies/courses/IDATA2502) at NTNU
 
 ### Overview
 This project implements an infrastructure delivery pipeline using OpenStack and includes both a frontend and backend application for a simple shopping list. The pipeline automates the deployment of application components and manages communication between the frontend and backend servers.
