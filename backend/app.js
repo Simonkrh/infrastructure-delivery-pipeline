@@ -26,8 +26,8 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Endpoint to get food items
-app.get('/food-items', (req, res) => {
+// Endpoint to get shopping items
+app.get('/shopping-items', (req, res) => {
     const query = 'SELECT * FROM food_items';
     pool.query(query, (err, results) => {
         if (err) {
@@ -71,7 +71,7 @@ app.post('/add-item', (req, res) => {
     });
 });
 
-// Endpoint to delete a food item
+// Endpoint to delete a shopping item
 app.delete('/delete-item', (req, res) => {
     const { id } = req.body;
     const query = 'DELETE FROM food_items WHERE id = ?';
@@ -94,7 +94,7 @@ app.delete('/delete-item', (req, res) => {
     });
 });
 
-// Endpoint to update the checked status of a food item
+// Endpoint to update the checked status of a shopping item
 app.post('/update-item', (req, res) => {
     const { id, checked } = req.body;
     const query = 'UPDATE food_items SET checked = ? WHERE id = ?';
