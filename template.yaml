@@ -1,7 +1,9 @@
+---
 heat_template_version: 2018-03-02
 
 description: >
-  A template to deploy two Ubuntu Server instances, each with 1 vCPU and 3GB RAM.
+  A template to deploy two Ubuntu Server instances,
+  each with 1 vCPU and 3GB RAM.
 
 parameters:
   image_ubuntu:
@@ -30,7 +32,7 @@ resources:
   my_subnet:
     type: OS::Neutron::Subnet
     properties:
-      network: { get_resource: my_network }
+      network: {get_resource: my_network}
       cidr: 192.168.1.0/24
       ip_version: 4
 
@@ -39,12 +41,12 @@ resources:
     type: OS::Nova::Server
     properties:
       name: FrontendServer
-      image: { get_param: image_ubuntu }
-      flavor: { get_param: flavor }
+      image: {get_param: image_ubuntu}
+      flavor: {get_param: flavor}
       networks:
-        - network: { get_resource: my_network }
+        - network: {get_resource: my_network}
       key_name: infrastructure-delivery-pipeline-key-pair
-      security_groups: [{ get_param: security_group }]
+      security_groups: [{get_param: security_group}]
     depends_on: my_network
 
   # Creating the Backend Linux Instance
@@ -52,19 +54,19 @@ resources:
     type: OS::Nova::Server
     properties:
       name: BackendServer
-      image: { get_param: image_ubuntu }
-      flavor: { get_param: flavor }
+      image: {get_param: image_ubuntu}
+      flavor: {get_param: flavor}
       networks:
-        - network: { get_resource: my_network }
+        - network: {get_resource: my_network}
       key_name: infrastructure-delivery-pipeline-key-pair
-      security_groups: [{ get_param: security_group }]
+      security_groups: [{get_param: security_group}]
     depends_on: my_network
 
 outputs:
   frontend_instance_ip:
     description: IP address of the Frontend Server
-    value: { get_attr: [ frontend_instance, first_address ] }
-    
+    value: {get_attr: [frontend_instance, first_address]}
+
   backend_instance_ip:
     description: IP address of the Backend Server
-    value: { get_attr: [ backend_instance, first_address ] }
+    value: {get_attr: [backend_instance, first_address]}

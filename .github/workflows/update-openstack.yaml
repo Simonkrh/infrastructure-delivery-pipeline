@@ -16,6 +16,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install yamllint with pip
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip
+          pip3 install yamllint
+
+      - name: Run YAML Linting
+        run: yamllint template.yaml
+
       - name: Install and Upgrade OpenStack CLI and Heat Client
         run: |
           sudo apt update
@@ -25,12 +34,6 @@ jobs:
           if [ ! -d ".cache" ]; then mkdir .cache; fi
           export PIP_CACHE_DIR=.cache
           pip install --cache-dir .cache --upgrade python-openstackclient python-heatclient
-
-      - name: List files in current directory
-        run: ls -al .github
-
-      - name: Debug Environment Variables
-        run: printenv
     
       - name: Configure OpenStack Environment
         env:
@@ -93,7 +96,7 @@ jobs:
 
           # Install dependencies and restart the frontend server
           ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
-            # Kill any existing process on the frontend port (assuming 8080 here)
+            # Kill any existing process on the frontend port 8080
             if lsof -t -i:8080; then
               sudo kill -9 $(lsof -t -i:8080)
             fi
