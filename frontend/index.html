@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Checklist</title>
+    <title>Shopping list</title>
     <style>
         body {
             display: flex;
@@ -21,7 +21,7 @@
             color: #333;
         }
 
-        #food-list {
+        #shopping-list {
             background-color: #fff;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -32,7 +32,7 @@
             margin-bottom: 20px;
         }
 
-        .food-item {
+        .shopping-item {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
@@ -70,34 +70,34 @@
 </head>
 
 <body>
-    <h1>Food Checklist</h1>
-    <input type="text" id="new-food-item" placeholder="Add new food item" />
-    <button id="add-food-item">Add Food Item</button>
-    <div id="food-list"></div>
+    <h1>Shopping List</h1>
+    <input type="text" id="new-shopping-item" placeholder="Add new shopping item" />
+    <button id="add-shopping-item">Add Shopping Item</button>
+    <div id="shopping-list"></div>
     <script>
         const backendAPI = '/api';
         const ws = new WebSocket(`ws://${window.location.host}/api`);
 
-        async function fetchFoodItems() {
+        async function fetchShoppingItems() {
             try {
-                const response = await fetch(`${backendAPI}/food-items`);
+                const response = await fetch(`${backendAPI}/shopping-items`);
                 const data = await response.json();
                 return data;
             } catch (error) {
-                console.error('Error fetching food items:', error);
+                console.error('Error fetching shopping items:', error);
                 return [];
             }
         }
 
-        async function renderFoodItems() {
-            const foodItems = await fetchFoodItems();
-            const foodList = document.getElementById('food-list');
+        async function renderShoppingItems() {
+            const shoppingItems = await fetchShoppingItems();
+            const shoppingList = document.getElementById('shopping-list');
 
-            if (foodList) {
-                foodList.innerHTML = '';
-                foodItems.forEach(item => {
+            if (shoppingList) {
+                shoppingList.innerHTML = '';
+                shoppingItems.forEach(item => {
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = 'food-item';
+                    itemDiv.className = 'shopping-item';
 
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
@@ -112,13 +112,13 @@
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = '❌'; 
                     deleteButton.style.marginLeft = 'auto';
-                    deleteButton.onclick = () => deleteFoodItem(item.id);
+                    deleteButton.onclick = () => deleteShoppingItem(item.id);
 
                     itemDiv.appendChild(checkbox);
                     itemDiv.appendChild(label);
                     itemDiv.appendChild(deleteButton); 
 
-                    foodList.appendChild(itemDiv);
+                    shoppingList.appendChild(itemDiv);
                 });
             }
         }
@@ -135,29 +135,29 @@
             }
         }
 
-        async function addFoodItem(name) {
+        async function addShoppingItem(name) {
             try {
                 await fetch(`${backendAPI}/add-item`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, checked: false })
                 });
-                renderFoodItems();
+                renderShoppingItems();
             } catch (error) {
-                console.error('Error adding food item:', error);
+                console.error('Error adding shopping item:', error);
             }
         }
 
-        async function deleteFoodItem(id) {
+        async function deleteShoppingItem(id) {
             try {
                 await fetch(`${backendAPI}/delete-item`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id })
                 });
-                renderFoodItems(); // Refresh the food list after deletion
+                renderShoppingItems(); // Refresh the shopping list after deletion
             } catch (error) {
-                console.error('Error deleting food item:', error);
+                console.error('Error deleting shopping item:', error);
             }
         }
 
@@ -166,26 +166,26 @@
             const data = JSON.parse(event.data);
 
             if (data.deleted) {
-                renderFoodItems();
+                renderShoppingItems();
             } else {
                 const checkbox = document.querySelector(`input[type="checkbox"][data-id="${data.id}"]`);
                 if (checkbox) {
                     checkbox.checked = data.checked;
                 } else {
-                    renderFoodItems();
+                    renderShoppingItems();
                 }
             }
         };
 
-        // Initial rendering of food items
-        renderFoodItems();
+        // Initial rendering of shopping items
+        renderShoppingItems();
 
-        // Event listener for adding new food item
-        document.getElementById('add-food-item').addEventListener('click', () => {
-            const newItemInput = document.getElementById('new-food-item');
+        // Event listener for adding new shopping item
+        document.getElementById('add-shopping-item').addEventListener('click', () => {
+            const newItemInput = document.getElementById('new-shopping-item');
             const newItemName = newItemInput.value.trim();
             if (newItemName) {
-                addFoodItem(newItemName);
+                addShoppingItem(newItemName);
                 newItemInput.value = '';
             }
         });
