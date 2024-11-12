@@ -3,7 +3,7 @@
 ## Project for the course [IDATA2502 Cloud services administration](https://www.ntnu.edu/studies/courses/IDATA2502) at NTNU
 
 ### Overview
-This project implements an infrastructure delivery pipeline using OpenStack and includes both a frontend and backend application for a simple shopping list. The pipeline automates the deployment of application components and manages communication between the frontend and backend servers.
+This project implements an infrastructure delivery pipeline using OpenStack and includes both a frontend and backend application for a simple shopping list. The pipeline automates the deployment and testing of the application components and manages communication between the frontend and backend servers.
 
 The primary **template.yaml** file in this repository is responsible for deploying:
 - **One Ubuntu Server instance** for the frontend (Ubuntu Server 24.04 LTS)
@@ -20,8 +20,17 @@ The **update-openstack.yaml** file is used to update the infrastructure stack an
 
 - **Backend**:
   - An API built with Express.js and MySQL that manages shopping list item data.
-  - Real-time broadcasting of updates to connected clients via WebSockets, ensuring all users have the latest information.
+  - Brodcasts updates to connected clients via WebSockets so that all users have the latest information.
 
 - **Infrastructure**:
   - Infrastructure as Code (IaC) leveraging OpenStack Heat templates for the deployment of the application environment.
   - Continuous Integration/Continuous Deployment (CI/CD) integration with GitHub Actions for automated and reliable deployment processes.
+ 
+- **Tests**:
+  - **Automated Low-Level Tests**
+    - **YAML Linting**: Validates the syntaxing and formating of the `template.yaml` file using `yamllint`.
+    - **JSON Validation**: Uses `jq` to validate the syntaxing and formating of `package.json` files in both frontend and backend directories. 
+    - **Dependency Validation**: Runs `npm install` to verify that all dependencies specified in `package.json` files for the frontend and backend are correct and can be installed without any errors.
+    - **JavaScript Linting**: Uses ESLint with a simple style guide to maintain a good and consistent code quality and styling in the JavaScript files. 
+    - **Security Vulnerability Scanning**: Conducts a security audit using `npm audit --audit-level=high` for both the frontend and the backend which identifies any high-severity vulnerabilities in the dependencies.
+
