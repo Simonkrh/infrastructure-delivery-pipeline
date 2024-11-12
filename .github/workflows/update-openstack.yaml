@@ -1,17 +1,16 @@
-name: Update OpenStack Stack and Deploy Frontend
+name: Update OpenStack Stack and Deploy Application
 
 on:
   push:
     branches:
-      - main  # Run on changes to the main branch (adjust if needed)
+      - main
     paths:
-      - 'template.yaml'  # Only trigger when this file is changed
-  workflow_dispatch:  # Allows manual triggering of the workflow
+      - 'template.yaml'
+  workflow_dispatch:
 
 jobs:
-  update_stack:
+  lint_and_validate:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -22,13 +21,13 @@ jobs:
           sudo apt update
           sudo apt install -y python3-pip
           pip3 install yamllint
-        
+
       # Lint the template.yaml file
       - name: Run YAML Linting
         run: yamllint template.yaml
 
       # Install jq for JSON validation
-      - name: Install jq
+      - name: Install jq for JSON validation
         run: sudo apt install -y jq
 
       # Validate JSON package files
@@ -36,16 +35,6 @@ jobs:
         run: |
           jq empty backend/package.json
           jq empty frontend/package.json
-      
-      # Verify Backend Dependencies
-      - name: Verify Backend Dependencies
-        working-directory: backend
-        run: npm install
-
-      # Verify Frontend Dependencies
-      - name: Verify Frontend Dependencies
-        working-directory: frontend
-        run: npm install
 
       # Install Node.js, ESLint, and Airbnb style guide for JS linting
       - name: Set up Node.js and install ESLint
@@ -53,15 +42,33 @@ jobs:
           sudo apt install -y npm
           npm install -g eslint eslint-config-airbnb-base eslint-plugin-import --save-dev
           eslint ./frontend/*.js ./backend/*.js
-      
-      # Run npm audit to scan dependencies for known vulnerabilities
+
+  install_dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Verify Backend Dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Verify Frontend Dependencies
+        working-directory: frontend
+        run: npm install
+
       - name: Run npm audit for security vulnerabilities
         run: |
           cd backend
-          npm audit --audit-level=high  
+          npm audit --audit-level=high
           cd ../frontend
           npm audit --audit-level=high
 
+  configure_openstack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Install and Upgrade OpenStack CLI and Heat Client
         run: |
@@ -72,7 +79,7 @@ jobs:
           if [ ! -d ".cache" ]; then mkdir .cache; fi
           export PIP_CACHE_DIR=.cache
           pip install --cache-dir .cache --upgrade python-openstackclient python-heatclient
-    
+
       - name: Configure OpenStack Environment
         env:
           OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
@@ -86,31 +93,14 @@ jobs:
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
         run: |
-          export OS_AUTH_URL=$OS_AUTH_URL
-          export OS_PROJECT_NAME=$OS_PROJECT_NAME
-          export OS_USERNAME=$OS_USERNAME
-          export OS_PASSWORD=$OS_PASSWORD
-          export OS_REGION_NAME=$OS_REGION_NAME
-          export OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME
-          export OS_PROJECT_DOMAIN_ID=$OS_PROJECT_DOMAIN_ID
-          export OS_PROJECT_ID=$OS_PROJECT_ID
-          export OS_IDENTITY_API_VERSION=$OS_IDENTITY_API_VERSION
-          export OS_INTERFACE=$OS_INTERFACE
-
-      - name: Update OpenStack Stack
-        env:
-          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
-          OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
-          OS_USERNAME: ${{ secrets.OS_USERNAME }}
-          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
-          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
-          OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
-          OS_PROJECT_DOMAIN_ID: ${{ secrets.OS_PROJECT_DOMAIN_ID }}
-          OS_PROJECT_ID: ${{ secrets.OS_PROJECT_ID }}
-          OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
-          OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
-        run: |
           openstack stack update --existing --template template.yaml infrastructure-delivery-pipeline-stack
+
+  deploy_frontend:
+    runs-on: ubuntu-latest
+    needs: configure_openstack
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Decode PEM Key and Save
         env:
@@ -126,13 +116,7 @@ jobs:
         run: |
           # Create the frontend directory if it doesn't exist
           ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "mkdir -p /home/ubuntu/frontend"
-
-          # Copy frontend files
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/index.html ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/index.html
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/package.json ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/package.json
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/frontend-server.js ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/frontend-server.js
-
-          # Install dependencies and restart the frontend server
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/
           ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
             # Kill any existing process on the frontend port 8080
             if lsof -t -i:8080; then
@@ -144,10 +128,26 @@ jobs:
             sudo apt install -y nodejs npm
             cd /home/ubuntu/frontend
             npm install
-            nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 & disown  # Start frontend server in the background
+            nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 & disown
           EOF
 
-      # Deploy Backend
+      - name: Clean Up PEM Key
+        run: rm infrastructure-delivery-pipeline-key-pair.pem
+
+  deploy_backend:
+    runs-on: ubuntu-latest
+    needs: configure_openstack
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Decode PEM Key and Save
+        env:
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY_BASE64 }}
+        run: |
+          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
+          chmod 600 infrastructure-delivery-pipeline-key-pair.pem
+
       - name: Deploy Backend to Backend Instance
         env:
           BACKEND_IP_ADDRESS: ${{ secrets.BACKEND_IP_ADDRESS }}
@@ -172,9 +172,8 @@ jobs:
             sudo apt install -y nodejs npm
             cd /home/ubuntu/backend
             npm install
-            nohup node app.js > /home/ubuntu/backend-server.log 2>&1 & disown  # Start backend server
+            nohup node app.js > /home/ubuntu/backend-server.log 2>&1 & disown
           EOF
 
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
-        
