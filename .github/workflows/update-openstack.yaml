@@ -43,6 +43,20 @@ jobs:
           npm install -g eslint eslint-config-airbnb-base eslint-plugin-import --save-dev
           eslint ./frontend/*.js ./backend/*.js
 
+  unit_tests:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Install Dependencies for Backend
+          working-directory: backend
+          run: npm install
+
+        - name: Run Unit Tests with Nock
+          working-directory: backend
+          run: npm test
+
   install_dependencies:
     runs-on: ubuntu-latest
     steps:
@@ -174,6 +188,6 @@ jobs:
             npm install
             nohup node app.js > /home/ubuntu/backend-server.log 2>&1 & disown
           EOF
-
+        
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
