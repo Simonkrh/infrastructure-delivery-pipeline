@@ -5,12 +5,15 @@ on:
     branches:
       - main
     paths:
-      - 'template.yaml'
+      - '.github/workflows/**'
+      - 'backend/**'
+      - 'frontend/**'
   workflow_dispatch:
+
 
 jobs:
   lint_and_validate:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -44,7 +47,7 @@ jobs:
           eslint ./frontend/*.js ./backend/*.js
 
   unit_tests:
-      runs-on: ubuntu-latest
+      runs-on: self-hosted
       steps:
         - name: Checkout code
           uses: actions/checkout@v2
@@ -58,7 +61,7 @@ jobs:
           run: npm test
 
   install_dependencies:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -79,7 +82,7 @@ jobs:
           npm audit --audit-level=high
 
   configure_openstack:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -110,7 +113,7 @@ jobs:
           openstack stack update --existing --template template.yaml infrastructure-delivery-pipeline-stack
 
   deploy_frontend:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: configure_openstack
     steps:
       - name: Checkout code
@@ -149,7 +152,7 @@ jobs:
         run: rm infrastructure-delivery-pipeline-key-pair.pem
 
   deploy_backend:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: configure_openstack
     steps:
       - name: Checkout code
