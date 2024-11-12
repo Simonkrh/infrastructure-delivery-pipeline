@@ -18,16 +18,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install yamllint for YAML syntax validation
-      - name: Install yamllint with pip
+      # Set up Python virtual environment for yamllint
+      - name: Set up Python virtual environment
         run: |
           sudo apt update
-          sudo apt install -y python3-pip
-          pip3 install yamllint
+          sudo apt install -y python3 python3-venv
+          python3 -m venv myenv
+          source myenv/bin/activate
+          pip install --upgrade pip
+          pip install yamllint
 
-      # Lint the template.yaml file
+      # Run YAML Linting
       - name: Run YAML Linting
-        run: yamllint template.yaml
+        run: |
+          source myenv/bin/activate
+          yamllint template.yaml
 
       # Install jq for JSON validation
       - name: Install jq for JSON validation
@@ -39,7 +44,7 @@ jobs:
           jq empty backend/package.json
           jq empty frontend/package.json
 
-      # Install Node.js, ESLint, and Airbnb style guide for JS linting
+      # Set up Node.js and install ESLint
       - name: Set up Node.js and install ESLint
         run: |
           sudo apt install -y npm
