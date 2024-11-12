@@ -8,7 +8,7 @@ This project implements an infrastructure delivery pipeline using OpenStack and 
 The primary **template.yaml** file in this repository is responsible for deploying:
 - **One Ubuntu Server instance** for the frontend (Ubuntu Server 24.04 LTS)
 - **One Ubuntu Server instance** for the backend (Ubuntu Server 24.04 LTS)
-- Both instances are provisioned with **1 vCPU and 4GB RAM**.
+- Both instances are provisioned with **1 vCPU and 3GB RAM**.
 
 The **update-openstack.yaml** file is used to update the infrastructure stack and servers created from the **template.yaml** file in OpenStack.
 
