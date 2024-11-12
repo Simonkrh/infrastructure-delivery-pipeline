@@ -12,6 +12,9 @@ The primary **template.yaml** file in this repository is responsible for deployi
 
 The **update-openstack.yaml** file is used to update the infrastructure stack and servers created from the **template.yaml** file in OpenStack.
 
+## Running the CI/CD Pipeline Locally
+Because of network restrictions within NTNU, GitHub Actions cannot directly interact with the OpenStack server. For that reasons, this project uses [**act.exe**](https://github.com/nektos/act?tab=readme-ov-file) (a locally-run GitHub Actions tool) to simulate the CI/CD pipeline locally. When connected to the NTNU netowrk, `act.exe` will execute the pipeline steps in the same way as GitHub Actions but without relying on GitHub's servers, making it compatible with the OpenStack environment at NTNU.
+
 ## Features
 
 - **Frontend**: 
