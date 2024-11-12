@@ -16,7 +16,7 @@ describe('API Unit Tests', () => {
         expect(Array.isArray(response.data)).toBe(true);
     });
 
-    test('POST /add-item adds a new item', async () => {
+    test('POST /add-item adds a new item and deletes it', async () => {
         const newItem = { name: 'Bread' };
         const response = await axios.post('http://localhost:8080/add-item', newItem);
         expect(response.status).toBe(200);
