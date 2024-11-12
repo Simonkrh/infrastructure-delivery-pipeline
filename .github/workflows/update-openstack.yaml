@@ -48,8 +48,8 @@ jobs:
       - name: Set up Node.js and install ESLint
         run: |
           sudo apt install -y npm
-          npm install eslint eslint-config-airbnb-base eslint-plugin-import
-          npx eslint ./frontend/*.js ./backend/*.js
+          npm install eslint
+          npx eslint -c eslint.config.mjs ./frontend/*.js ./backend/*.js
 
   unit_tests:
       runs-on: self-hosted
