@@ -2,13 +2,15 @@
 const mysql = require('mysql2/promise');
 const axios = require('axios');
 
+// Mock the MySQL and Axios modules
 jest.mock('mysql2/promise', () => ({
   createConnection: jest.fn().mockResolvedValue({
     query: jest.fn()
-      .mockResolvedValueOnce([[{ id: 1, name: 'Mock Item', checked: false }]]) // Initial fetch
-      .mockResolvedValueOnce([{ insertId: 2 }]) // Insert new item
-      .mockResolvedValueOnce([{ affectedRows: 1 }]) // Update item
-      .mockRejectedValue(new Error('Database connection error')), // Error handling test
+      .mockResolvedValueOnce([[{ id: 1, name: 'Mock Item', checked: false }]]) // Fetch items
+      .mockResolvedValueOnce({ insertId: 2 }) // Insert item
+      .mockResolvedValueOnce({ affectedRows: 1 }) // Update item
+      .mockResolvedValueOnce({ affectedRows: 1 }) // Delete item
+      .mockRejectedValueOnce(new Error('Database connection error')), // Error handling test
     end: jest.fn().mockResolvedValue(),
   }),
 }));
@@ -56,5 +58,4 @@ describe('Backend-Database Integration Tests (with Mocked DB and API)', () => {
     const deleteResult = await connection.query('DELETE FROM food_items WHERE id = ?', [1]);
     expect(deleteResult.affectedRows).toBe(1); // Check if one row was deleted as expected
   });
-  
 });
