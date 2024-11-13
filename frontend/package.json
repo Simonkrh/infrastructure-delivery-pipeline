@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "e2e": "jest --config jest.end-to-end.config.js"
+    "e2e": "jest --config jest.e2e.config.js"
   },
   "keywords": [],
   "author": "",
