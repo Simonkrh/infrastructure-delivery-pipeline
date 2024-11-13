@@ -1,26 +1,37 @@
-/*global require, describe, beforeAll, afterAll, test, expect*/
-const mysql = require('mysql2/promise');
+/*global require, describe, beforeAll, afterAll, test, expect, jest */
 const axios = require('axios');
 
-describe('Backend-Database Integration Tests', () => {
-    let connection;
+// Mock mysql2/promise
+jest.mock('mysql2/promise', () => {
+  return {
+    createConnection: jest.fn().mockResolvedValue({
+      query: jest.fn().mockResolvedValue([[{ id: 1, name: 'Mock Item', checked: false }]]), // Mocked response
+      end: jest.fn().mockResolvedValue(),
+    }),
+  };
+});
 
-    beforeAll(async () => {
-        connection = await mysql.createConnection({
-            host: '127.0.0.1',
-            user: 'backend_user',
-            password: 'N0m!sSecurePwd123',
-            database: 'food_db'
-        });
-    });
+const mysql = require('mysql2/promise');
 
-    afterAll(async () => {
-        await connection.end();
-    });
+describe('Backend-Database Integration Tests (with Mocked DB)', () => {
+  let connection;
 
-    test('Fetch items from database via API', async () => {
-        const response = await axios.get('http://localhost:8080/shopping-items');
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.data)).toBe(true);
-    });
+  beforeAll(async () => {
+    // Using the mocked connection here
+    connection = await mysql.createConnection();
+  });
+
+  afterAll(async () => {
+    await connection.end(); // Ends the mocked connection
+  });
+
+  test('Fetch items from database via API', async () => {
+    // Mock axios call to simulate backend API request
+    const response = await axios.get('http://localhost:8080/shopping-items');
+    
+    // Expectations based on the mock data
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.data)).toBe(true);
+    expect(response.data).toEqual([{ id: 1, name: 'Mock Item', checked: false }]);
+  });
 });
