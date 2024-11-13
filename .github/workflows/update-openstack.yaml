@@ -10,7 +10,6 @@ on:
       - 'frontend/**'
   workflow_dispatch:
 
-
 jobs:
   lint_and_validate:
     runs-on: self-hosted
@@ -57,7 +56,25 @@ jobs:
           ./node_modules/.bin/eslint -c eslint.config.mjs ./frontend/*.js ./backend/*.js
 
   well_balanced_test_suite:
-      runs-on: ubuntu-latest
+      runs-on: self_hosted
+      needs: deploy_backend
+      
+      services:
+        mysql:
+          image: mysql:5.7
+          env:
+            MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE: food_db
+            MYSQL_USER: backend_user
+            MYSQL_PASSWORD: ${{ secrets.MYSQL_USER_PASSWORD }}
+          ports:
+            - 3306:3306
+          options: >-
+            --health-cmd="mysqladmin ping --silent"
+            --health-interval=10s
+            --health-timeout=5s
+            --health-retries=3
+
       steps:
         - name: Checkout code
           uses: actions/checkout@v2
@@ -65,6 +82,11 @@ jobs:
         - name: Install Dependencies for Backend
           working-directory: backend
           run: npm install
+
+        - name: Start Backend Server
+        working-directory: backend
+        run: |
+          nohup npm start &  
 
         # Run Unit Tests
         - name: Run Unit Tests

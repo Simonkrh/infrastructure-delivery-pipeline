@@ -7,7 +7,7 @@ describe('Backend-Database Integration Tests', () => {
 
     beforeAll(async () => {
         connection = await mysql.createConnection({
-            host: 'localhost',
+            host: '127.0.0.1',
             user: 'backend_user',
             password: 'N0m!sSecurePwd123',
             database: 'food_db'
