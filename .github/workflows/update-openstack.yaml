@@ -55,10 +55,10 @@ jobs:
           # Run ESLint with the specified config file
           ./node_modules/.bin/eslint -c eslint.config.mjs ./frontend/*.js ./backend/*.js
 
-  well_balanced_test_suite:
+    well_balanced_test_suite:
       runs-on: self_hosted
       needs: deploy_backend
-      
+        
       services:
         mysql:
           image: mysql:5.7
@@ -84,9 +84,9 @@ jobs:
           run: npm install
 
         - name: Start Backend Server
-        working-directory: backend
-        run: |
-          nohup npm start &  
+          working-directory: backend
+          run: |
+            nohup npm start &
 
         # Run Unit Tests
         - name: Run Unit Tests
