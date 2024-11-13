@@ -57,7 +57,7 @@ jobs:
           ./node_modules/.bin/eslint -c eslint.config.mjs ./frontend/*.js ./backend/*.js
 
   well_balanced_test_suite:
-      runs-on: self-hosted
+      runs-on: ubuntu-latest
       steps:
         - name: Checkout code
           uses: actions/checkout@v2
@@ -66,13 +66,15 @@ jobs:
           working-directory: backend
           run: npm install
 
-        - name: Run Unit Tests with Nock
+        # Run Unit Tests
+        - name: Run Unit Tests
           working-directory: backend
-          run: npm test
-          
-        - name: Run Backend-Database Integration Tests
+          run: npm run test:unit
+
+        # Run Integration Tests
+        - name: Run Integration Tests
           working-directory: backend
-          run: npm run integration-test
+          run: npm run test:integration
 
   install_dependencies:
     runs-on: self-hosted
