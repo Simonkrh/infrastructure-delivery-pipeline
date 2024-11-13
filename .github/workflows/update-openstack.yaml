@@ -66,7 +66,7 @@ jobs:
       - name: Install Dependencies for Backend
         working-directory: backend
         run: npm install
-        
+
       # Run Unit Tests
       - name: Run Unit Tests
         working-directory: backend
@@ -76,6 +76,11 @@ jobs:
       - name: Run Integration Tests
         working-directory: backend
         run: npm run test:integration
+
+      # Run Frontend E2E Tests
+      - name: Run Frontend E2E Tests
+        working-directory: frontend
+        run: npm run e2e
 
   install_dependencies:
     runs-on: self-hosted
