@@ -49,7 +49,7 @@ jobs:
         run: |
           sudo apt install -y npm
           npm install eslint
-          npx eslint --cconfig eslint.config.mjs ./frontend/*.js ./backend/*.js
+          npx eslint --config eslint.config.mjs ./frontend/*.js ./backend/*.js
 
   unit_tests:
       runs-on: self-hosted
