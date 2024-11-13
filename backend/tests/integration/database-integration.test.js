@@ -9,8 +9,8 @@ jest.mock('mysql2/promise', () => ({
       .mockResolvedValueOnce([[{ id: 1, name: 'Mock Item', checked: false }]]) // Fetch items
       .mockResolvedValueOnce({ insertId: 2 }) // Insert item
       .mockResolvedValueOnce({ affectedRows: 1 }) // Update item
-      .mockResolvedValueOnce({ affectedRows: 1 }) // Delete item
-      .mockRejectedValueOnce(new Error('Database connection error')), // Error handling test
+      .mockRejectedValueOnce(new Error('Database connection error')) // Error handling test
+      .mockResolvedValueOnce({ affectedRows: 1 }), // Delete item
     end: jest.fn().mockResolvedValue(),
   }),
 }));
