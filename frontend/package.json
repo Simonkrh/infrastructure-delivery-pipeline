@@ -14,6 +14,7 @@
     "http-proxy-middleware": "^3.0.3"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "puppeteer": "^23.7.1"
   }
 }
