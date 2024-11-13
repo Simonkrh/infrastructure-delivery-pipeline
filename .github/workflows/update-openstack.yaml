@@ -92,7 +92,7 @@ jobs:
       # Run Frontend E2E Tests
       - name: Run Frontend E2E Tests
         working-directory: frontend
-        run: npm run e2e
+        run: npm run test:e2e
 
   install_dependencies:
     runs-on: self-hosted

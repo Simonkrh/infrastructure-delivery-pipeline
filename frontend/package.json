@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "e2e": "jest --config jest.end-to-end.config.js"
   },
   "keywords": [],
   "author": "",
