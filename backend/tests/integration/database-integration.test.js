@@ -51,4 +51,10 @@ describe('Backend-Database Integration Tests (with Mocked DB and API)', () => {
   test('Handle database connection error', async () => {
     await expect(connection.query('SELECT * FROM non_existent_table')).rejects.toThrow('Database connection error');
   });
+
+  test('Delete an item from the database', async () => {
+    const deleteResult = await connection.query('DELETE FROM food_items WHERE id = ?', [1]);
+    expect(deleteResult.affectedRows).toBe(1); // Check if one row was deleted as expected
+  });
+  
 });
