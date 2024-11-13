@@ -6,7 +6,6 @@ const axios = require('axios');
 jest.mock('mysql2/promise', () => ({
   createConnection: jest.fn().mockResolvedValue({
     query: jest.fn()
-      .mockResolvedValueOnce([[{ id: 1, name: 'Mock Item', checked: false }]]) // Fetch items
       .mockResolvedValueOnce({ insertId: 2 }) // Insert item
       .mockResolvedValueOnce({ affectedRows: 1 }) // Update item
       .mockRejectedValueOnce(new Error('Database connection error')) // Error handling test
@@ -41,21 +40,32 @@ describe('Backend-Database Integration Tests (with Mocked DB and API)', () => {
 
   test('Add a new item to the database', async () => {
     const newItem = { name: 'New Mock Item', checked: false };
-    const result = await connection.query('INSERT INTO food_items (name, checked) VALUES (?, ?)', [newItem.name, newItem.checked]);
+    const result = await connection.query(
+      'INSERT INTO food_items (name, checked) VALUES (?, ?)',
+      [newItem.name, newItem.checked]
+    );
     expect(result.insertId).toBe(2); // Check if the mock returns the expected insertId
   });
 
   test('Update an item in the database', async () => {
-    const updateResult = await connection.query('UPDATE food_items SET checked = ? WHERE id = ?', [true, 1]);
+    const updateResult = await connection.query(
+      'UPDATE food_items SET checked = ? WHERE id = ?',
+      [true, 1]
+    );
     expect(updateResult.affectedRows).toBe(1); // Check if one row was affected as expected
   });
 
   test('Handle database connection error', async () => {
-    await expect(connection.query('SELECT * FROM non_existent_table')).rejects.toThrow('Database connection error');
+    await expect(
+      connection.query('SELECT * FROM non_existent_table')
+    ).rejects.toThrow('Database connection error');
   });
 
   test('Delete an item from the database', async () => {
-    const deleteResult = await connection.query('DELETE FROM food_items WHERE id = ?', [1]);
+    const deleteResult = await connection.query(
+      'DELETE FROM food_items WHERE id = ?',
+      [1]
+    );
     expect(deleteResult.affectedRows).toBe(1); // Check if one row was deleted as expected
   });
 });
