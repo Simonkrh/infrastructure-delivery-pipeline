@@ -4,12 +4,15 @@ const axios = require('axios');
 
 jest.mock('mysql2/promise', () => ({
   createConnection: jest.fn().mockResolvedValue({
-    query: jest.fn().mockResolvedValue([[{ id: 1, name: 'Mock Item', checked: false }]]), // Mocked DB response
+    query: jest.fn()
+      .mockResolvedValueOnce([[{ id: 1, name: 'Mock Item', checked: false }]]) // Initial fetch
+      .mockResolvedValueOnce([{ insertId: 2 }]) // Insert new item
+      .mockResolvedValueOnce([{ affectedRows: 1 }]) // Update item
+      .mockRejectedValue(new Error('Database connection error')), // Error handling test
     end: jest.fn().mockResolvedValue(),
   }),
 }));
 
-// Mock the axios module
 jest.mock('axios');
 
 describe('Backend-Database Integration Tests (with Mocked DB and API)', () => {
@@ -20,7 +23,7 @@ describe('Backend-Database Integration Tests (with Mocked DB and API)', () => {
     axios.get.mockResolvedValue({
       status: 200,
       data: [{ id: 1, name: 'Mock Item', checked: false }],
-    }); // Mocked API response
+    });
   });
 
   afterAll(async () => {
@@ -32,5 +35,20 @@ describe('Backend-Database Integration Tests (with Mocked DB and API)', () => {
     expect(response.status).toBe(200);
     expect(Array.isArray(response.data)).toBe(true);
     expect(response.data).toEqual([{ id: 1, name: 'Mock Item', checked: false }]);
+  });
+
+  test('Add a new item to the database', async () => {
+    const newItem = { name: 'New Mock Item', checked: false };
+    const result = await connection.query('INSERT INTO food_items (name, checked) VALUES (?, ?)', [newItem.name, newItem.checked]);
+    expect(result.insertId).toBe(2); // Check if the mock returns the expected insertId
+  });
+
+  test('Update an item in the database', async () => {
+    const updateResult = await connection.query('UPDATE food_items SET checked = ? WHERE id = ?', [true, 1]);
+    expect(updateResult.affectedRows).toBe(1); // Check if one row was affected as expected
+  });
+
+  test('Handle database connection error', async () => {
+    await expect(connection.query('SELECT * FROM non_existent_table')).rejects.toThrow('Database connection error');
   });
 });
