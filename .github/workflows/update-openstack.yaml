@@ -49,9 +49,12 @@ jobs:
         run: |
           sudo apt install -y npm
           npm install eslint @eslint/js globals
-          # Run ESLint directly with node_modules reference
-          ./node_modules/.bin/eslint -c eslint.config.mjs ./frontend/*.js ./backend/*.js
 
+          # Grant execute permissions to ESLint binary
+          chmod +x ./node_modules/.bin/eslint
+
+          # Run ESLint with the specified config file
+          ./node_modules/.bin/eslint -c eslint.config.mjs ./frontend/*.js ./backend/*.js
 
   unit_tests:
       runs-on: self-hosted
