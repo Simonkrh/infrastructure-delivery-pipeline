@@ -167,7 +167,7 @@ jobs:
         run: |
           # Create the frontend directory if it doesn't exist
           ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "mkdir -p /home/ubuntu/frontend"
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/
           ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
             # Kill any existing process on the frontend port 8080
             if lsof -t -i:8080; then
