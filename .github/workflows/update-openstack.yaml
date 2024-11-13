@@ -72,15 +72,7 @@ jobs:
         run: |
           nohup npm start &
 
-      # Run Unit Tests
-      - name: Run Unit Tests
-        working-directory: backend
-        run: npm run test:unit
-
-      # Run Integration Tests
-      - name: Run Integration Tests
-        working-directory: backend
-        run: npm run test:integration
+      
 
   install_dependencies:
     runs-on: self-hosted
@@ -212,6 +204,9 @@ jobs:
             cd /home/ubuntu/backend
             npm install
             nohup node app.js > /home/ubuntu/backend-server.log 2>&1 & disown
+
+            npm run test:unit
+            npm run test:integration
           EOF
         
       - name: Clean Up PEM Key
