@@ -7,18 +7,23 @@ describe('Shopping List E2E Test', () => {
 
     // Set up Puppeteer browser before all tests
     beforeAll(async () => {
-        browser = await puppeteer.launch({ headless: true }); 
+        browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']  // Disable sandbox for compatibility
+        });
         page = await browser.newPage();
     });
 
     // Close the browser after all tests
     afterAll(async () => {
-        await browser.close();
+        if (browser) {
+            await browser.close();
+        }
     });
 
     test('Add a new item to the shopping list', async () => {
         // Open the frontend page
-        await page.goto('http://10.212.26.123:8080/');  
+        await page.goto('http://10.212.26.123:8080/');
 
         // Type a new item in the input field
         await page.type('#new-shopping-item', 'Eggs');
@@ -36,7 +41,7 @@ describe('Shopping List E2E Test', () => {
 
     test('Check if an item can be marked as complete', async () => {
         // Open the frontend page
-        await page.goto('http://yhttp://10.212.26.123:8080/080');  
+        await page.goto('http://10.212.26.123:8080/');
 
         // Locate the checkbox for the newly added item
         const checkboxSelector = '#shopping-list .shopping-item:last-child input[type="checkbox"]';
