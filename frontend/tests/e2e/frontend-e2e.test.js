@@ -22,27 +22,6 @@ describe('Shopping List E2E Test', () => {
     });
 
     test('Add a new item to the shopping list', async () => {
-    // Open the frontend page
-    await page.goto('http://10.212.26.123:8080/');
-
-    // Generate a unique item name
-    const uniqueItem = `Eggs ${Date.now()}`;
-
-    // Type the unique item in the input field
-    await page.type('#new-shopping-item', uniqueItem);
-
-    // Click the 'Add Shopping Item' button
-    await page.click('#add-shopping-item');
-
-    // Wait for the new item to appear in the shopping list
-    await page.waitForSelector('#shopping-list .shopping-item');
-
-    // Verify the item appears in the list
-    const itemText = await page.$eval('#shopping-list .shopping-item:last-child label', el => el.textContent);
-    expect(itemText).toBe(uniqueItem);
-    });
-
-    test('Add a new item to the shopping list', async () => {
         // Open the frontend page
         await page.goto('http://10.212.26.123:8080/');
     
