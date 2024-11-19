@@ -42,15 +42,21 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
-      # Install ESLint globally
-      - name: Install ESLint
-        run: npm install -g eslint
+      # Install and Run ESLint in Backend
+      - name: Install and Run ESLint in Backend
+        working-directory: backend
+        run: |
+          npm install
+          npx eslint .
 
-      # Run ESLint on frontend and backend JavaScript files
-      - name: Run ESLint
-        run: eslint ./frontend/**/*.js ./backend/**/*.js
+      # Install and Run ESLint in Frontend
+      - name: Install and Run ESLint in Frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npx eslint .
 
   # Backend Test Suite
   backend_test_suite:
@@ -63,7 +69,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       # Cache dependencies
       - name: Cache Node.js dependencies
@@ -100,7 +106,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
       # Cache dependencies
       - name: Cache Node.js dependencies
@@ -189,9 +195,11 @@ jobs:
           scp -o StrictHostKeyChecking=no -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
           
           ssh -o StrictHostKeyChecking=no ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
+            # Install Node.js 18
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+
             # Install dependencies and start backend server
-            sudo apt update
-            sudo apt install -y nodejs npm
             cd /home/ubuntu/backend
             npm install
             nohup node app.js > /home/ubuntu/backend-server.log 2>&1 &
@@ -231,9 +239,11 @@ jobs:
           scp -o StrictHostKeyChecking=no -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend
           
           ssh -o StrictHostKeyChecking=no ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
+            # Install Node.js 18
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+
             # Install dependencies and start frontend server
-            sudo apt update
-            sudo apt install -y nodejs npm
             cd /home/ubuntu/frontend
             npm install
             nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 &
