@@ -49,14 +49,14 @@ jobs:
         working-directory: backend
         run: |
           npm install
-          npx eslint .
+          npm run lint
 
       # Install and Run ESLint in Frontend
       - name: Install and Run ESLint in Frontend
         working-directory: frontend
         run: |
           npm install
-          npx eslint .
+          npm run lint
 
   # Backend Test Suite
   backend_test_suite:
