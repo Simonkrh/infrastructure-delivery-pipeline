@@ -96,7 +96,7 @@ jobs:
         run: npm run test:integration
 
   # Frontend Test Suite
-  frontend_test_suite:
+  e2e_tests:
     runs-on: ubuntu-latest
     needs: deploy_frontend
     steps:
@@ -130,7 +130,7 @@ jobs:
   # Configure OpenStack
   configure_openstack:
     runs-on: ubuntu-latest
-    needs: [backend_test_suite, frontend_test_suite]
+    needs: backend_test_suite
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
