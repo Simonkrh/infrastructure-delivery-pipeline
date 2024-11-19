@@ -169,11 +169,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Decode PEM Key and Save
+      - name: Decode PEM Key
+        env:
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY }}
+        run: |
+          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key.pem
+          chmod 600 infrastructure-delivery-pipeline-key.pem
+
       # Start SSH Agent and Add SSH Key
       - name: Start SSH Agent and Add Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.PEM_KEY }}
+          ssh-private-key: |
+            $(cat infrastructure-delivery-pipeline-key.pem)
 
       # Deploy Backend Application
       - name: Deploy Backend to Backend Instance
@@ -205,7 +214,11 @@ jobs:
             nohup node app.js > /home/ubuntu/backend-server.log 2>&1 &
           EOF
 
-  # Deploy Frontend
+      # Cleanup the Key File
+      - name: Cleanup Key
+        run: rm infrastructure-delivery-pipeline-key.pem
+
+
   deploy_frontend:
     runs-on: self-hosted
     needs: configure_openstack
@@ -213,11 +226,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Decode PEM Key and Save
+      - name: Decode PEM Key
+        env:
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY }}
+        run: |
+          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key.pem
+          chmod 600 infrastructure-delivery-pipeline-key.pem
+
       # Start SSH Agent and Add SSH Key
       - name: Start SSH Agent and Add Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.PEM_KEY }}
+          ssh-private-key: |
+            $(cat infrastructure-delivery-pipeline-key.pem)
 
       # Deploy Frontend Application
       - name: Deploy Frontend to Frontend Instance
@@ -248,3 +270,8 @@ jobs:
             npm install
             nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 &
           EOF
+
+      # Cleanup the Key File
+      - name: Cleanup Key
+        run: rm infrastructure-delivery-pipeline-key.pem
+
