@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 describe('Shopping List E2E Test', () => {
     let browser;
     let page;
+    let uniqueItem; // Shared variable to track the added item's name
 
     // Set up Puppeteer browser before all tests
     beforeAll(async () => {
@@ -24,16 +25,16 @@ describe('Shopping List E2E Test', () => {
     test('Add a new item to the shopping list', async () => {
         // Open the frontend page
         await page.goto('http://10.212.26.123:8080/');
-        
+
         // Generate a unique item name
-        const uniqueItem = `Eggs ${Date.now()}`;
-        
+        uniqueItem = `Eggs ${Date.now()}`;
+
         // Type the unique item in the input field
         await page.type('#new-shopping-item', uniqueItem);
-        
+
         // Click the 'Add Shopping Item' button
         await page.click('#add-shopping-item');
-        
+
         // Wait until the item appears in the list
         await page.waitForFunction(
             (itemName) => {
@@ -43,13 +44,13 @@ describe('Shopping List E2E Test', () => {
             {},
             uniqueItem
         );
-    
+
         // Verify that the item was found in the list
         const itemExists = await page.evaluate((itemName) => {
             const items = Array.from(document.querySelectorAll('#shopping-list .shopping-item label'));
             return items.some(item => item.textContent === itemName);
         }, uniqueItem);
-    
+
         expect(itemExists).toBe(true);
     });
 
@@ -69,18 +70,11 @@ describe('Shopping List E2E Test', () => {
         expect(isChecked).toBe(true);
     });
 
-    test('Delete an item from the shopping list', async () => {
+    test('Delete the previously added item from the shopping list', async () => {
         // Open the frontend page
         await page.goto('http://10.212.26.123:8080/');
 
-        // Generate a unique item name for deletion test
-        const uniqueItem = `Milk ${Date.now()}`;
-
-        // Add a new item for deletion
-        await page.type('#new-shopping-item', uniqueItem);
-        await page.click('#add-shopping-item');
-
-        // Wait for the new item to appear
+        // Wait until the item to be deleted appears in the list
         await page.waitForFunction(
             (itemName) => {
                 const items = Array.from(document.querySelectorAll('#shopping-list .shopping-item label'));
@@ -90,17 +84,33 @@ describe('Shopping List E2E Test', () => {
             uniqueItem
         );
 
-        // Locate and click the delete button for the added item
-        const deleteButtonSelector = '#shopping-list .shopping-item:last-child button';
-        await page.waitForSelector(deleteButtonSelector);
-        await page.click(deleteButtonSelector);
+        // Delete the item by clicking its delete button
+        await page.evaluate((itemName) => {
+            const item = Array.from(document.querySelectorAll('#shopping-list .shopping-item'))
+                .find(item => item.querySelector('label').textContent === itemName);
 
-        // Verify the item is no longer in the list
-        const itemExistsAfterDelete = await page.evaluate((itemName) => {
+            if (item) {
+                const deleteButton = item.querySelector('button');
+                deleteButton.click();
+            }
+        }, uniqueItem);
+
+        // Wait for the item to be removed from the DOM
+        await page.waitForFunction(
+            (itemName) => {
+                const items = Array.from(document.querySelectorAll('#shopping-list .shopping-item label'));
+                return !items.some(item => item.textContent === itemName);
+            },
+            {},
+            uniqueItem
+        );
+
+        // Verify that the item is no longer in the list
+        const itemExistsAfterDeletion = await page.evaluate((itemName) => {
             const items = Array.from(document.querySelectorAll('#shopping-list .shopping-item label'));
             return items.some(item => item.textContent === itemName);
         }, uniqueItem);
 
-        expect(itemExistsAfterDelete).toBe(false);
+        expect(itemExistsAfterDeletion).toBe(false);
     });
 });
