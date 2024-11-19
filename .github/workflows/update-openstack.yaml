@@ -149,7 +149,7 @@ jobs:
   # Configure OpenStack
   configure_openstack:
     runs-on: self-hosted
-    needs: backend_test_suite
+    needs: lint_and_validate
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -221,7 +221,7 @@ jobs:
 
   deploy_backend:
     runs-on: self-hosted
-    needs: configure_openstack
+    needs: [configure_openstack, backend_test_suite]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
