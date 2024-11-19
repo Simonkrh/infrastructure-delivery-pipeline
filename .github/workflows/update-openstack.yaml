@@ -161,7 +161,7 @@ jobs:
         run: |
           openstack stack update --existing --template template.yaml infrastructure-delivery-pipeline-stack
 
-  # Deploy Backend
+ # Deploy Backend
   deploy_backend:
     runs-on: self-hosted
     needs: configure_openstack
@@ -172,7 +172,7 @@ jobs:
       # Decode PEM Key and Save
       - name: Decode PEM Key
         env:
-          PEM_KEY_BASE64: ${{ secrets.PEM_KEY_BASE64 }}
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY }}
         run: |
           echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key.pem
           chmod 600 infrastructure-delivery-pipeline-key.pem
@@ -181,7 +181,8 @@ jobs:
       - name: Start SSH Agent and Add Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.PEM_KEY_BASE64 | fromBase64 }}
+          ssh-private-key: |
+            $(cat infrastructure-delivery-pipeline-key.pem)
 
       # Deploy Backend Application
       - name: Deploy Backend to Backend Instance
@@ -200,9 +201,9 @@ jobs:
           EOF
           
           # Copy backend files to the server
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key.pem -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
+          scp -o StrictHostKeyChecking=no -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
           
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
             # Install Node.js 18
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
@@ -217,6 +218,7 @@ jobs:
       - name: Cleanup Key
         run: rm infrastructure-delivery-pipeline-key.pem
 
+
   deploy_frontend:
     runs-on: self-hosted
     needs: configure_openstack
@@ -227,7 +229,7 @@ jobs:
       # Decode PEM Key and Save
       - name: Decode PEM Key
         env:
-          PEM_KEY_BASE64: ${{ secrets.PEM_KEY_BASE64 }}
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY }}
         run: |
           echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key.pem
           chmod 600 infrastructure-delivery-pipeline-key.pem
@@ -236,7 +238,8 @@ jobs:
       - name: Start SSH Agent and Add Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.PEM_KEY_BASE64 | fromBase64 }}
+          ssh-private-key: |
+            $(cat infrastructure-delivery-pipeline-key.pem)
 
       # Deploy Frontend Application
       - name: Deploy Frontend to Frontend Instance
@@ -255,9 +258,9 @@ jobs:
           EOF
           
           # Copy frontend files to the server
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key.pem -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend
+          scp -o StrictHostKeyChecking=no -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend
           
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
             # Install Node.js 18
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
@@ -270,4 +273,4 @@ jobs:
 
       # Cleanup the Key File
       - name: Cleanup Key
-        run: rm infrastructure-delivery-pipeline-key.pem
+        run: rm infrastructure-delivery-pipeline-key.pe
