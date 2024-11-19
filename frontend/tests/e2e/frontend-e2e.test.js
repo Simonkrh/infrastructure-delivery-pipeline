@@ -24,29 +24,35 @@ describe('Shopping List E2E Test', () => {
     test('Add a new item to the shopping list', async () => {
         // Open the frontend page
         await page.goto('http://10.212.26.123:8080/');
-    
+        
         // Generate a unique item name
         const uniqueItem = `Eggs ${Date.now()}`;
-    
+        
         // Type the unique item in the input field
         await page.type('#new-shopping-item', uniqueItem);
-    
+        
         // Click the 'Add Shopping Item' button
         await page.click('#add-shopping-item');
+        
+        // Wait until the item appears in the list
+        await page.waitForFunction(
+            (itemName) => {
+                const items = Array.from(document.querySelectorAll('#shopping-list .shopping-item label'));
+                return items.some(item => item.textContent === itemName);
+            },
+            {},
+            uniqueItem
+        );
     
-        // Wait for the new item to appear in the shopping list
-        await page.waitForSelector('#shopping-list .shopping-item');
-    
-        // Search for the item by its unique name in the shopping list
+        // Verify that the item was found in the list
         const itemExists = await page.evaluate((itemName) => {
             const items = Array.from(document.querySelectorAll('#shopping-list .shopping-item label'));
             return items.some(item => item.textContent === itemName);
         }, uniqueItem);
     
-        // Verify that the item was found in the list
         expect(itemExists).toBe(true);
-    });    
-
+    });
+       
     test('Check if an item can be marked as complete', async () => {
         // Open the frontend page
         await page.goto('http://10.212.26.123:8080/');
