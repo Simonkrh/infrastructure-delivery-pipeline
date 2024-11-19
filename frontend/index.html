@@ -49,11 +49,11 @@
         input[type="text"] {
             padding: 10px;
             margin-bottom: 10px;
-            width: 30%; 
+            width: 30%;
             border: 1px solid #ccc;
             border-radius: 5px;
             display: block;
-            margin: 0 auto; 
+            margin: 0 auto;
         }
 
         button {
@@ -67,7 +67,7 @@
         button:hover {
             background-color: #d4d2d2
         }
-        
+
         .addButton {
             background-color: #28a745;
             margin-top: 20px;
@@ -81,7 +81,7 @@
 </head>
 
 <body>
-    <h1>Shopping List</h1>
+    <h1>Shopping Lists</h1>
     <input type="text" id="new-shopping-item" placeholder="Add new shopping item" />
     <button id="add-shopping-item" class="addButton">Add Shopping Item</button>
     <div id="shopping-list"></div>
@@ -121,13 +121,13 @@
 
                     // Create delete button
                     const deleteButton = document.createElement('button');
-                    deleteButton.textContent = '❌'; 
+                    deleteButton.textContent = '❌';
                     deleteButton.style.marginLeft = 'auto';
                     deleteButton.onclick = () => deleteShoppingItem(item.id);
 
                     itemDiv.appendChild(checkbox);
                     itemDiv.appendChild(label);
-                    itemDiv.appendChild(deleteButton); 
+                    itemDiv.appendChild(deleteButton);
 
                     shoppingList.appendChild(itemDiv);
                 });

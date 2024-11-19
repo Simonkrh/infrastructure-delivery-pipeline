@@ -116,6 +116,7 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-frontend-
+          compression-level: none # Skip compression since it up the cache size is small (save time)
 
       # Install Frontend Dependencies
       - name: Install Frontend Dependencies
