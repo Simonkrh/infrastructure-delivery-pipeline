@@ -161,35 +161,64 @@ jobs:
         run: |
           openstack stack update --existing --template template.yaml infrastructure-delivery-pipeline-stack
 
- # Deploy Backend
+ deploy_frontend:
+    runs-on: self-hosted
+    needs: configure_openstack
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Decode PEM Key and Save
+        env:
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY_BASE64 }}
+        run: |
+          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
+          chmod 600 infrastructure-delivery-pipeline-key-pair.pem
+
+      # Deploy Frontend
+      - name: Deploy Frontend Files to Linux Instance
+        env:
+          FRONTEND_IP_ADDRESS: ${{ secrets.FRONTEND_IP_ADDRESS }}
+        run: |
+          # Create the frontend directory if it doesn't exist
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "mkdir -p /home/ubuntu/frontend"
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
+            # Kill any existing process on the frontend port 8080
+            if lsof -t -i:8080; then
+              sudo kill -9 $(lsof -t -i:8080)
+            fi
+
+            # Install dependencies and start the frontend server
+            sudo apt update
+            sudo apt install -y nodejs npm
+            cd /home/ubuntu/frontend
+            npm install
+            nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 & disown
+          EOF
+
+      - name: Clean Up PEM Key
+        run: rm infrastructure-delivery-pipeline-key-pair.pem
+
   deploy_backend:
     runs-on: self-hosted
     needs: configure_openstack
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      # Decode PEM Key and Save
-      - name: Decode PEM Key
+      - name: Decode PEM Key and Save
         env:
-          PEM_KEY_BASE64: ${{ secrets.PEM_KEY }}
+          PEM_KEY_BASE64: ${{ secrets.PEM_KEY_BASE64 }}
         run: |
-          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key.pem
-          chmod 600 infrastructure-delivery-pipeline-key.pem
+          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
+          chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
-      # Start SSH Agent and Add SSH Key
-      - name: Start SSH Agent and Add Key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: |
-            $(cat infrastructure-delivery-pipeline-key.pem)
-
-      # Deploy Backend Application
       - name: Deploy Backend to Backend Instance
         env:
           BACKEND_IP_ADDRESS: ${{ secrets.BACKEND_IP_ADDRESS }}
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
             # Kill any existing process on port 8080
             if lsof -t -i:8080; then
               sudo kill -9 $(lsof -t -i:8080)
@@ -200,77 +229,17 @@ jobs:
             mkdir -p /home/ubuntu/backend
           EOF
           
-          # Copy backend files to the server
-          scp -o StrictHostKeyChecking=no -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
+          # Copy the contents of the local backend directory to the server
+          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
           
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
-            # Install Node.js 18
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-
-            # Install dependencies and start backend server
+          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
+            # Install dependencies and restart backend
+            sudo apt update
+            sudo apt install -y nodejs npm
             cd /home/ubuntu/backend
             npm install
-            nohup node app.js > /home/ubuntu/backend-server.log 2>&1 &
+            nohup node app.js > /home/ubuntu/backend-server.log 2>&1 & disown
           EOF
-
-      # Cleanup the Key File
-      - name: Cleanup Key
-        run: rm infrastructure-delivery-pipeline-key.pem
-
-
-  deploy_frontend:
-    runs-on: self-hosted
-    needs: configure_openstack
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Decode PEM Key and Save
-      - name: Decode PEM Key
-        env:
-          PEM_KEY_BASE64: ${{ secrets.PEM_KEY }}
-        run: |
-          echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key.pem
-          chmod 600 infrastructure-delivery-pipeline-key.pem
-
-      # Start SSH Agent and Add SSH Key
-      - name: Start SSH Agent and Add Key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: |
-            $(cat infrastructure-delivery-pipeline-key.pem)
-
-      # Deploy Frontend Application
-      - name: Deploy Frontend to Frontend Instance
-        env:
-          FRONTEND_IP_ADDRESS: ${{ secrets.FRONTEND_IP_ADDRESS }}
-        run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
-            # Kill any existing process on port 8080
-            if lsof -t -i:8080; then
-              sudo kill -9 $(lsof -t -i:8080)
-            fi
-
-            # Remove and recreate the frontend directory
-            rm -rf /home/ubuntu/frontend
-            mkdir -p /home/ubuntu/frontend
-          EOF
-          
-          # Copy frontend files to the server
-          scp -o StrictHostKeyChecking=no -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend
-          
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
-            # Install Node.js 18
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-
-            # Install dependencies and start frontend server
-            cd /home/ubuntu/frontend
-            npm install
-            nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 &
-          EOF
-
-      # Cleanup the Key File
-      - name: Cleanup Key
-        run: rm infrastructure-delivery-pipeline-key.pe
+        
+      - name: Clean Up PEM Key
+        run: rm infrastructure-delivery-pipeline-key-pair.pem
