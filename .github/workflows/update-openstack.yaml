@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Linting and Validation Job
+  # Linting and Validation
   lint_and_validate:
     runs-on: self-hosted
     steps:
@@ -37,20 +37,40 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-frontend-
 
-      # Install Dependencies and Run All Linters in One Step
-      - name: Install Dependencies and Run Linters
+      # Set up Python and Install yamllint in a Virtual Environment
+      - name: Set up Python Virtual Environment
         run: |
-          # Install dependencies
-          npm install --prefix backend
-          npm install --prefix frontend
-          
-          # Run YAML linting
+          sudo apt update
+          sudo apt install -y python3 python3-venv
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
           pip install yamllint
+
+      # Run YAML Linting
+      - name: Run YAML Linting
+        run: |
+          source venv/bin/activate
           yamllint template.yaml
 
-          # Validate JSON files
+      # Validate JSON Files using jq (pre-installed on self-hosted)
+      - name: Validate JSON Files
+        run: |
           jq empty backend/package.json
           jq empty frontend/package.json
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Install Dependencies and Run Linters
+      - name: Install Dependencies and Run Linters
+        run: |
+          # Install backend and frontend dependencies
+          npm install --prefix backend
+          npm install --prefix frontend
 
           # Run ESLint for Backend and Frontend
           npm run lint --prefix backend
