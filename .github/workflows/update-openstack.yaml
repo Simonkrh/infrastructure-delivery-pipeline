@@ -156,7 +156,7 @@ jobs:
         working-directory: frontend
         run: npm run test:e2e
 
-  # Load Testing (New Job)
+  # Load Testing
   load_test:
     runs-on: self-hosted
     needs: [deploy_backend, deploy_frontend]
@@ -257,28 +257,28 @@ jobs:
         env:
           BACKEND_IP_ADDRESS: ${{ secrets.BACKEND_IP_ADDRESS }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
-            # Kill any existing process on port 8080
+          # Define SSH and SCP options
+          SSH_OPTIONS="-o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem"
+          BACKEND_DIR="/home/ubuntu/backend"
+
+          # Kill any existing process on port 8080
+          ssh $SSH_OPTIONS ubuntu@${{ env.BACKEND_IP_ADDRESS }} "
             if lsof -t -i:8080; then
-              sudo kill -9 $(lsof -t -i:8080)
+              sudo kill -9 \$(lsof -t -i:8080)
             fi
+          "
 
-            # Remove and recreate the backend directory
-            rm -rf /home/ubuntu/backend
-            mkdir -p /home/ubuntu/backend
-          EOF
+          # Recreate the backend directory and copy new files
+          ssh $SSH_OPTIONS ubuntu@${{ env.BACKEND_IP_ADDRESS }} "rm -rf $BACKEND_DIR && mkdir -p $BACKEND_DIR"
+          scp $SSH_OPTIONS -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:$BACKEND_DIR
 
-          # Copy the contents of the local backend directory to the server
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:/home/ubuntu/backend
-
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.BACKEND_IP_ADDRESS }} << 'EOF'
-            # Install dependencies and restart backend
-            sudo apt update
-            sudo apt install -y nodejs npm
-            cd /home/ubuntu/backend
+          # Install dependencies and start the backend
+          ssh $SSH_OPTIONS ubuntu@${{ env.BACKEND_IP_ADDRESS }} "
+            sudo apt update && sudo apt install -y nodejs npm
+            cd $BACKEND_DIR
             npm install
-            nohup node app.js > /home/ubuntu/backend-server.log 2>&1 & disown
-          EOF
+            nohup node app.js > $BACKEND_DIR/backend-server.log 2>&1 & disown
+          "
 
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
