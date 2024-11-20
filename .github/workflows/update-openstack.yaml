@@ -156,6 +156,16 @@ jobs:
         working-directory: frontend
         run: npm run test:e2e
 
+  # Load Testing (New Job)
+  load_test:
+    runs-on: self-hosted
+    needs: [deploy_backend, deploy_frontend]
+    steps:
+      - name: Run Load Test
+        run: |
+          npm install -g k6
+          k6 run --vus 10 --duration 30s test-load.js
+
   # Configure OpenStack
   configure_openstack:
     runs-on: self-hosted
