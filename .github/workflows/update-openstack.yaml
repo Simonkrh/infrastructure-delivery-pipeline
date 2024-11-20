@@ -163,8 +163,8 @@ jobs:
     steps:
       - name: Run Load Test
         run: |
-          npm install -g k6
-          k6 run --vus 10 --duration 30s test-load.js
+          npm install k6
+          npx k6 run --vus 10 --duration 30s test-load.js
 
   # Configure OpenStack
   configure_openstack:
