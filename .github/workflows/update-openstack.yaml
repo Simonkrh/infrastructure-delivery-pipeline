@@ -37,15 +37,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-frontend-
 
-      # Set up Python and Install yamllint in a Virtual Environment
-      - name: Set up Python Virtual Environment
-        run: |
-          sudo apt update
-          sudo apt install -y python3 python3-venv
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install yamllint
+      # Set up Python using official action
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
 
       # Run YAML Linting
       - name: Run YAML Linting
