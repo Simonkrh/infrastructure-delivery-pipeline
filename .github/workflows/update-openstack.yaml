@@ -43,11 +43,13 @@ jobs:
         with:
           python-version: "3.x"
 
-      # Install yamllint
-      - name: Install yamllint
+      # Create and activate virtual environment, then install yamllint
+      - name: Set up Python Virtual Environment and Install yamllint
         run: |
-          python -m pip install --upgrade pip
-          pip install yamllint
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install yamllin
 
       # Run YAML Linting
       - name: Run YAML Linting
