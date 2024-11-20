@@ -101,7 +101,7 @@ jobs:
       # Install Backend Dependencies
       - name: Install Backend Dependencies
         working-directory: backend
-        run: npm install
+        run: npm ci
 
       # Run Backend Unit Tests
       - name: Run Backend Unit Tests
@@ -112,6 +112,12 @@ jobs:
       - name: Run Backend Integration Tests
         working-directory: backend
         run: npm run test:integration
+
+      - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-test-results
+        path: backend/test-results/
 
   # Frontend Test Suite
   e2e_tests:
@@ -139,7 +145,7 @@ jobs:
       # Install Frontend Dependencies
       - name: Install Frontend Dependencies
         working-directory: frontend
-        run: npm install
+        run: npm ci
 
       # Run Frontend E2E Tests
       - name: Run Frontend E2E Tests
