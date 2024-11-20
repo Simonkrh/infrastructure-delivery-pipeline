@@ -49,7 +49,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install yamllin
+          pip install yamllint
 
       # Run YAML Linting
       - name: Run YAML Linting
