@@ -157,7 +157,7 @@ jobs:
         run: npm run test:e2e
 
   # Load Testing
-  load_test:
+  load_tests:
     runs-on: self-hosted
     needs: [deploy_backend, deploy_frontend]
     steps:
@@ -174,7 +174,7 @@ jobs:
       - name: Run Backend Load Test
         working-directory: backend
         run: |
-          k6 run load.test.js
+          k6 run test:load
 
   # Configure OpenStack
   configure_openstack:
