@@ -161,10 +161,19 @@ jobs:
     runs-on: self-hosted
     needs: [deploy_backend, deploy_frontend]
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install k6
+        run: |
+          wget https://github.com/grafana/k6/releases/download/v0.45.0/k6-v0.45.0-linux-amd64.tar.gz
+          tar -xzf k6-v0.45.0-linux-amd64.tar.gz
+          sudo mv k6-v0.45.0-linux-amd64/k6 /usr/local/bin/
+          rm -rf k6-v0.45.0-linux-amd64.tar.gz k6-v0.45.0-linux-amd64
+
       - name: Run Load Test
         run: |
-          npm install k6
-          npx k6 run --vus 10 --duration 30s test-load.js
+          k6 run --vus 10 --duration 30s test-load.js
 
   # Configure OpenStack
   configure_openstack:
