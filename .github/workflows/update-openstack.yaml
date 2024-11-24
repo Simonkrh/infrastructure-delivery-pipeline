@@ -117,7 +117,7 @@ jobs:
         working-directory: backend
         run: npm run test:integration
 
-  # Frontend Test Suite
+  # E2E tests
   e2e_tests:
     runs-on: self-hosted
     needs: [deploy_backend, deploy_frontend]
@@ -157,6 +157,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Set Execute Permissions for Scripts
+        run: chmod +x scripts/*.sh
 
       - name: Run Load Tests
         run: ./scripts/run_load_tests.sh
@@ -286,12 +289,16 @@ jobs:
 
           echo "All infrastructure tests passed successfully."
 
+  # Deploy frontend
   deploy_frontend:
     runs-on: self-hosted
     needs: infrastructure_tests
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set Execute Permissions for Scripts
+        run: chmod +x scripts/*.sh
 
       - name: Decode PEM Key and Save
         env:
@@ -300,7 +307,7 @@ jobs:
           echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
           chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
-      # Deploy Frontend
+      #Deploy
       - name: Deploy Frontend
         env:
           FRONTEND_IP: ${{ secrets.FRONTEND_IP }}
@@ -310,12 +317,16 @@ jobs:
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
 
+  # Deploy backend
   deploy_backend:
     runs-on: self-hosted
     needs: [configure_openstack, infrastructure_tests, backend_test_suite]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set Execute Permissions for Scripts
+        run: chmod +x scripts/*.sh
 
       - name: Decode PEM Key and Save
         env:
@@ -324,6 +335,7 @@ jobs:
           echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
           chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
+      #Deploy
       - name: Deploy Backend
         env:
           BACKEND_IP: ${{ secrets.BACKEND_IP }}
