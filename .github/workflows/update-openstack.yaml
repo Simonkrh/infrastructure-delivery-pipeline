@@ -310,7 +310,7 @@ jobs:
       #Deploy
       - name: Deploy Frontend
         env:
-          FRONTEND_IP: ${{ secrets.FRONTEND_IP }}
+          FRONTEND_IP: ${{ secrets.FRONTEND_IP_ADDRESS }}
           PEM_KEY_PATH: "infrastructure-delivery-pipeline-key-pair.pem"
         run: ./scripts/deploy_frontend.sh
 
@@ -338,7 +338,7 @@ jobs:
       #Deploy
       - name: Deploy Backend
         env:
-          BACKEND_IP: ${{ secrets.BACKEND_IP }}
+          BACKEND_IP: ${{ secrets.BACKEND_IP_ADDRESS }}
           PEM_KEY_PATH: "infrastructure-delivery-pipeline-key-pair.pem"
         run: ./scripts/deploy_backend.sh
 
