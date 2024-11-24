@@ -153,27 +153,13 @@ jobs:
   # Load Testing
   load_test:
     runs-on: self-hosted
-    needs: [deploy_backend, deploy_frontend]
+    needs: [e2e_tests]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install k6
-        run: |
-          wget https://github.com/grafana/k6/releases/download/v0.45.0/k6-v0.45.0-linux-amd64.tar.gz
-          tar -xzf k6-v0.45.0-linux-amd64.tar.gz
-          sudo mv k6-v0.45.0-linux-amd64/k6 /usr/local/bin/
-          rm -rf k6-v0.45.0-linux-amd64.tar.gz k6-v0.45.0-linux-amd64
-
-      - name: Run Backend Load Test
-        working-directory: backend
-        run: |
-          k6 run ./tests/load/load.test.js
-
-      - name: Run Backend Load Test
-        working-directory: frontend
-        run: |
-          k6 run ./tests/load/load.test.js
+      - name: Run Load Tests
+        run: ./scripts/run_load_tests.sh
 
   # Configure OpenStack
   configure_openstack:
@@ -302,7 +288,7 @@ jobs:
 
   deploy_frontend:
     runs-on: self-hosted
-    needs: [configure_openstack, infrastructure_tests]
+    needs: infrastructure_tests
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -315,26 +301,11 @@ jobs:
           chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
       # Deploy Frontend
-      - name: Deploy Frontend Files to Linux Instance
+      - name: Deploy Frontend
         env:
-          FRONTEND_IP_ADDRESS: ${{ secrets.FRONTEND_IP_ADDRESS }}
-        run: |
-          # Create the frontend directory if it doesn't exist
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} "mkdir -p /home/ubuntu/frontend"
-          scp -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem -r ./frontend/* ubuntu@${{ env.FRONTEND_IP_ADDRESS }}:/home/ubuntu/frontend/
-          ssh -o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem ubuntu@${{ env.FRONTEND_IP_ADDRESS }} << 'EOF'
-            # Kill any existing process on the frontend port 8080
-            if lsof -t -i:8080; then
-              sudo kill -9 $(lsof -t -i:8080)
-            fi
-
-            # Install dependencies and start the frontend server
-            sudo apt update
-            sudo apt install -y nodejs npm
-            cd /home/ubuntu/frontend
-            npm install
-            nohup node frontend-server.js > /home/ubuntu/frontend/frontend-server.log 2>&1 & disown
-          EOF
+          FRONTEND_IP: ${{ secrets.FRONTEND_IP }}
+          PEM_KEY_PATH: "infrastructure-delivery-pipeline-key-pair.pem"
+        run: ./scripts/deploy_frontend.sh
 
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
@@ -353,32 +324,11 @@ jobs:
           echo "$PEM_KEY_BASE64" | base64 -d > infrastructure-delivery-pipeline-key-pair.pem
           chmod 600 infrastructure-delivery-pipeline-key-pair.pem
 
-      - name: Deploy Backend to Backend Instance
+      - name: Deploy Backend
         env:
-          BACKEND_IP_ADDRESS: ${{ secrets.BACKEND_IP_ADDRESS }}
-        run: |
-          # Define SSH and SCP options
-          SSH_OPTIONS="-o StrictHostKeyChecking=no -i infrastructure-delivery-pipeline-key-pair.pem"
-          BACKEND_DIR="/home/ubuntu/backend"
-
-          # Kill any existing process on port 8080
-          ssh $SSH_OPTIONS ubuntu@${{ env.BACKEND_IP_ADDRESS }} "
-            if lsof -t -i:8080; then
-              sudo kill -9 \$(lsof -t -i:8080)
-            fi
-          "
-
-          # Recreate the backend directory and copy new files
-          ssh $SSH_OPTIONS ubuntu@${{ env.BACKEND_IP_ADDRESS }} "rm -rf $BACKEND_DIR && mkdir -p $BACKEND_DIR"
-          scp $SSH_OPTIONS -r ./backend/* ubuntu@${{ env.BACKEND_IP_ADDRESS }}:$BACKEND_DIR
-
-          # Install dependencies and start the backend
-          ssh $SSH_OPTIONS ubuntu@${{ env.BACKEND_IP_ADDRESS }} "
-            sudo apt update && sudo apt install -y nodejs npm
-            cd $BACKEND_DIR
-            npm install
-            nohup node app.js > $BACKEND_DIR/backend-server.log 2>&1 & disown
-          "
+          BACKEND_IP: ${{ secrets.BACKEND_IP }}
+          PEM_KEY_PATH: "infrastructure-delivery-pipeline-key-pair.pem"
+        run: ./scripts/deploy_backend.sh
 
       - name: Clean Up PEM Key
         run: rm infrastructure-delivery-pipeline-key-pair.pem
