@@ -171,9 +171,10 @@ jobs:
           sudo mv k6-v0.45.0-linux-amd64/k6 /usr/local/bin/
           rm -rf k6-v0.45.0-linux-amd64.tar.gz k6-v0.45.0-linux-amd64
 
-      - name: Run Load Test
+      - name: Run Backend Load Test
+        working-directory: backend
         run: |
-          k6 run --vus 10 --duration 30s test-load.js
+          k6 run load.test.js
 
   # Configure OpenStack
   configure_openstack:
