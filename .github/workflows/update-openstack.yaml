@@ -229,7 +229,7 @@ jobs:
           OS_PROJECT_ID: ${{ secrets.OS_PROJECT_ID }}
           OS_IDENTITY_API_VERSION: ${{ secrets.OS_IDENTITY_API_VERSION }}
           OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
-          run: ./scripts/run_infrastructure_tests.sh
+        run: ./scripts/run_infrastructure_tests.sh
 
   # Deploy frontend
   deploy_frontend:
