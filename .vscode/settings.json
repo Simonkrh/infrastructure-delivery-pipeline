@@ -1,0 +1,5 @@
+{
+    "yaml.schemas": {
+        "https://json.schemastore.org/yamllint.json": "file:///c%3A/Github%20Repos/Infrastructure-Delivery-Pipeline/template.yaml"
+    }
+}
