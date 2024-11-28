@@ -51,7 +51,7 @@ The CI/CD pipeline is defined by the **update-openstack.yaml** workflow file and
 2. Backend Testing:
     - **Unit Tests**: Validates individual backend components.
     - **Integration Tests**: Tests the interaction between the backend API and the MySQL database.
-3. Frontend Testing:
+3. Frontend-Backend Testing:
     - **End-to-End (E2E) Tests**: Ensures components on the frontend functions as expected when interacting with the backend.
 4. Load Testing
     - Uses `k6` to evaluate the application’s performance with simulating 10 concurrent users accessing the application for 30 seconds.
