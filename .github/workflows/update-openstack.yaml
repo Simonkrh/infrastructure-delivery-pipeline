@@ -216,6 +216,9 @@ jobs:
       - name: Install OpenStack CLI tools
         run: pip install python-openstackclient python-heatclient
 
+      - name: Set Execute Permissions for Scripts
+        run: chmod +x ./scripts/run_infrastructure_tests.sh
+
       # Run Infrastructure Tests
       - name: Run Infrastructure Tests
         env:
